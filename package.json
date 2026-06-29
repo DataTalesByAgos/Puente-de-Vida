@@ -1,0 +1,41 @@
+{
+  "name": "puente-de-vida",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Sentinel / Puente de Vida — plataforma offline-first para la coordinación de emergencias",
+  "license": "MIT",
+  "workspaces": [
+    "apps/api",
+    "apps/web"
+  ],
+  "scripts": {
+    "dev": "concurrently -n api,web -c blue,magenta \"npm run dev -w @pdv/api\" \"npm run dev -w @pdv/web\"",
+    "build": "npm run build -w @pdv/api && npm run build -w @pdv/web",
+    "typecheck": "npm run typecheck -w @pdv/api && npm run typecheck -w @pdv/web",
+    "lint": "eslint \"apps/**/*.{ts,tsx,js,jsx}\"",
+    "lint:fix": "eslint \"apps/**/*.{ts,tsx,js,jsx}\" --fix",
+    "format": "prettier --write \"apps/**/*.{ts,tsx,json,css,md}\" \"*.{json,md}\"",
+    "format:check": "prettier --check \"apps/**/*.{ts,tsx,json,css,md}\" \"*.{json,md}\"",
+    "seed": "npm run seed -w @pdv/api",
+    "sim": "npm run sim -w @pdv/api --",
+    "db:up": "docker compose up -d db",
+    "up": "docker compose up --build",
+    "down": "docker compose down"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.5",
+    "@next/eslint-plugin-next": "^16.2.9",
+    "@typescript-eslint/eslint-plugin": "^8.62.0",
+    "@typescript-eslint/parser": "^8.62.0",
+    "concurrently": "^9.1.0",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^16.2.9",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "prettier": "^3.8.5"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

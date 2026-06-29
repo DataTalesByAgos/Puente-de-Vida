@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Builds
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Docker volumes (local)
+.pgdata/
+
+# Kapso
+.kapso/
+
+# Junie Agent
+.agents/
+skills-lock.json
+
+# opencode
+mcp.json
+.opencode/
+
+# Agent metadata
+AGENTS.md

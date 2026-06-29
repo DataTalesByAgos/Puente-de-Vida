@@ -1,0 +1,100 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Fuente de campaña: Input Mono Narrow (materiales/). Solo títulos y datos. */
+@font-face {
+  font-family: 'Input Mono Narrow';
+  src: url('/fonts/InputMonoNarrow-Light.ttf') format('truetype');
+  font-weight: 300;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Input Mono Narrow';
+  src: url('/fonts/InputMonoNarrow-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Input Mono Narrow';
+  src: url('/fonts/InputMonoNarrow-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Input Mono Narrow';
+  src: url('/fonts/InputMonoNarrow-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Input Mono Narrow';
+  src: url('/fonts/InputMonoNarrow-Black.ttf') format('truetype');
+  font-weight: 900;
+  font-display: swap;
+}
+
+:root {
+  --font-display: 'Input Mono Narrow';
+  /* Cuerpo: stack nativo (cero descargas, ideal para offline-first). */
+  --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+@layer base {
+  html,
+  body {
+    @apply bg-paper text-ink;
+    font-family: var(--font-body);
+    /* Atmósfera sutil: tinte cálido de marca en las esquinas, sin peso extra. */
+    background-image:
+      radial-gradient(60rem 60rem at 100% -10%, rgba(111, 202, 239, 0.1), transparent 60%),
+      radial-gradient(50rem 50rem at -10% 0%, rgba(239, 59, 86, 0.07), transparent 55%);
+    background-attachment: fixed;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    @apply tracking-tight;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-xl border border-line bg-surface p-4 shadow-card;
+  }
+  .card-flat {
+    @apply rounded-xl border border-line bg-surface p-4;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 font-medium transition
+      active:scale-95;
+  }
+  .btn-primary {
+    @apply btn bg-coral text-white shadow-card hover:brightness-105;
+  }
+  .btn-ghost {
+    @apply btn border border-line bg-surface text-ink hover:bg-paper;
+  }
+  .input {
+    @apply w-full rounded-xl border border-line bg-surface px-3 py-2 text-ink
+      placeholder:text-muted focus:border-sky focus:outline-none focus:ring-2 focus:ring-sky/30;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+  /* Etiqueta de datos en fuente de campaña (KPIs, números, badges). */
+  .label-mono {
+    font-family: var(--font-display);
+    @apply uppercase tracking-wide;
+  }
+}
+
+/* Leaflet: fondo claro mientras cargan los tiles. */
+.leaflet-container {
+  background: #e9eef3;
+  font-family: var(--font-body);
+}
+.leaflet-popup-content {
+  font-family: var(--font-body);
+}
