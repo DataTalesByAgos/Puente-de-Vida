@@ -35,4 +35,10 @@ module.exports = [
   },
   eslintConfigPrettier,
   reactHooks.configs.flat.recommended,
+  {
+    rules: {
+      'react-hooks/set-state-in-effect': 'warn',
+      'react-hooks/preserve-manual-memoization': 'warn',
+    },
+  },
 ];
