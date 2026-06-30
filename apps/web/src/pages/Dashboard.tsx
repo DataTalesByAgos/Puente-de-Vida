@@ -41,7 +41,11 @@ function ReportModal({
   onClose: () => void;
   modalRef: React.RefObject<HTMLDivElement | null>;
 }) {
-  const channel = SOURCE_META[report.source];
+  const channel = SOURCE_META[report.source] || {
+    label: report.source || 'Desconocido',
+    icon: '📌',
+    chip: 'bg-paper text-muted border border-line',
+  };
   const critical = report.priority === 'critica';
   const [audit, setAudit] = useState<AuditEntry[]>([]);
   const [status, setStatus] = useState(report.status);

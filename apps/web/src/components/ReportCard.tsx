@@ -42,7 +42,11 @@ export function ReportCard({
   const [showQR, setShowQR] = useState(false);
   const [showTriage, setShowTriage] = useState(false);
   const next = NEXT_STATUS[report.status];
-  const channel = SOURCE_META[report.source];
+  const channel = SOURCE_META[report.source] || {
+    label: report.source || 'Desconocido',
+    icon: '📌',
+    chip: 'bg-paper text-muted border border-line',
+  };
   const critical = report.priority === 'critica';
 
   return (
