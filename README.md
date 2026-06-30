@@ -66,15 +66,15 @@ graph TB
 
 ## 🛠️ Stack
 
-| Capa       | Tecnología                                         |
-| ---------- | -------------------------------------------------- |
-| Frontend   | Vite + React 19 + TanStack Router + Tailwind       |
-| Backend    | Node.js + Fastify + TypeScript                     |
-| DB         | PostgreSQL + Dexie.js (IndexedDB local)            |
-| Mapas      | Leaflet + OpenStreetMap                            |
-| PWA        | vite-plugin-pwa + Service Worker custom            |
-| IA         | Heurística local / OpenAI-compatible (conmutable)  |
-| WhatsApp   | Simulador mock / proveedor genérico vía API        |
+| Capa     | Tecnología                                        |
+| -------- | ------------------------------------------------- |
+| Frontend | Vite + React 19 + TanStack Router + Tailwind      |
+| Backend  | Node.js + Fastify + TypeScript                    |
+| DB       | PostgreSQL + Dexie.js (IndexedDB local)           |
+| Mapas    | Leaflet + OpenStreetMap                           |
+| PWA      | vite-plugin-pwa + Service Worker custom           |
+| IA       | Heurística local / OpenAI-compatible (conmutable) |
+| WhatsApp | Simulador mock / proveedor genérico vía API       |
 
 ---
 
@@ -134,11 +134,12 @@ npm run sim -w @pdv/api -- --rate 20 --total 300
 ```
 
 Usuarios de prueba (crear con `seed:orgs`):
-| Usuario   | Contraseña     | Rol       |
-| --------- | -------------- | --------- |
-| `lector`  | `lector2026`   | viewer    |
-| `operador`| `operador2026` | operator  |
-| `admin`   | `PdV2026!`     | admin     |
+
+| Usuario    | Contraseña     | Rol      |
+| ---------- | -------------- | -------- |
+| `lector`   | `lector2026`   | viewer   |
+| `operador` | `operador2026` | operator |
+| `admin`    | `PdV2026!`     | admin    |
 
 ---
 
@@ -159,3 +160,8 @@ WHATSAPP_API_KEY=tu-api-key
 ## 📄 Licencia
 
 MIT
+
+---
+
+📘 [Documentación técnica](docs/TECNICO.md) — arquitectura, clasificación offline, proveedores, API
+🧭 [Roadmap](docs/ROADMAP.md) — mejoras planificadas y cómo aportar
