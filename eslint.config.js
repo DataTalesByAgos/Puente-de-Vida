@@ -34,5 +34,5 @@ module.exports = [
     },
   },
   eslintConfigPrettier,
-  ...reactHooks.configs.flat.recommended,
+  reactHooks.configs.flat.recommended,
 ];
