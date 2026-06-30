@@ -45,6 +45,18 @@ export function createSession(userId: string, username: string, role: string): s
   return token;
 }
 
+export function parseCookie(cookieHeader: string | string[] | undefined): string | null {
+  if (!cookieHeader) return null;
+  const raw = Array.isArray(cookieHeader) ? cookieHeader[0] : cookieHeader;
+  for (const part of raw.split(';')) {
+    const eq = part.indexOf('=');
+    if (eq !== -1 && part.slice(0, eq).trim() === 'pdv_token') {
+      return part.slice(eq + 1).trim();
+    }
+  }
+  return null;
+}
+
 export function parseAuth(req: {
   headers?: Record<string, string | string[] | undefined>;
 }): Session | null {
@@ -53,10 +65,16 @@ export function parseAuth(req: {
     /^bearer\s+/i,
     '',
   );
-  const session = sessions.get(auth);
+
+  let token = auth;
+  if (!token || !sessions.get(token)) {
+    token = parseCookie(req.headers?.['cookie']) ?? '';
+  }
+
+  const session = sessions.get(token);
   if (!session) return null;
   if (session.expiresAt <= Date.now()) {
-    sessions.delete(auth);
+    sessions.delete(token);
     return null;
   }
   return session;

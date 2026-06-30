@@ -1,6 +1,7 @@
 import { db, getMeta, serverToLocal, setMeta } from './db';
 import { api, type SyncItem } from './api';
 import { classifyLocal } from './heuristic';
+import { syncAudit } from './audit';
 import type { LocalReport, ServerReport } from './types';
 
 // Gestor de sincronización offline-first.
@@ -24,7 +25,7 @@ export async function createLocalReport(input: NewReportInput): Promise<LocalRep
       ? crypto.randomUUID()
       : `c-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   const now = new Date().toISOString();
-  const { incidentType, priority } = classifyLocal(input.rawText);
+  const { incidentType, priority, age } = classifyLocal(input.rawText);
 
   const record: LocalReport = {
     key: clientId,
@@ -44,6 +45,8 @@ export async function createLocalReport(input: NewReportInput): Promise<LocalRep
     reporterName: input.reporterName || 'Anónimo',
     reporterPhone: null,
     photoDataUrl: input.photoDataUrl,
+    age,
+    isMinor: age != null && age < 18,
     duplicateOf: null,
     groupRelationType: null,
     groupScore: null,
@@ -76,7 +79,7 @@ export async function createWhatsappReport(input: NewWhatsappInput): Promise<Loc
   const now = new Date().toISOString();
   // Clave estable por teléfono + instante: idempotente y ordenable.
   const clientId = `wa:${input.reporterPhone ?? 'anon'}:${Date.now()}`;
-  const { incidentType, priority } = classifyLocal(input.rawText);
+  const { incidentType, priority, age } = classifyLocal(input.rawText);
 
   const record: LocalReport = {
     key: clientId,
@@ -96,6 +99,8 @@ export async function createWhatsappReport(input: NewWhatsappInput): Promise<Loc
     reporterName: input.reporterName,
     reporterPhone: input.reporterPhone,
     photoDataUrl: null,
+    age,
+    isMinor: age != null && age < 18,
     duplicateOf: null,
     groupRelationType: null,
     groupScore: null,
@@ -112,7 +117,6 @@ export async function createWhatsappReport(input: NewWhatsappInput): Promise<Loc
 function toSyncItem(r: LocalReport): SyncItem {
   return {
     clientId: r.clientId ?? r.key,
-    // Conserva el canal de origen (whatsapp, pwa, …) al subir al servidor.
     source: r.source,
     rawText: r.rawText,
     lat: r.lat,
@@ -120,10 +124,10 @@ function toSyncItem(r: LocalReport): SyncItem {
     locationText: r.locationText,
     reporterName: r.reporterName,
     reporterPhone: r.reporterPhone,
-    // La foto queda solo en el dispositivo (no se sube el binario en la demo).
     photoUrl: null,
     incidentType: r.incidentType,
     priority: r.priority,
+    age: r.age,
     createdAt: r.createdAt,
   };
 }
@@ -189,6 +193,9 @@ export async function syncNow(): Promise<{ pushed: number; pulled: number } | nu
     }
 
     await setMeta(LAST_SYNC_KEY, now);
+
+    // 4) Sync de auditoría pendiente
+    await syncAudit();
 
     return { pushed, pulled: reports.length };
   } finally {

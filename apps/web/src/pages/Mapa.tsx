@@ -1,18 +1,43 @@
-import { lazy, Suspense, useMemo } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
+import { Link } from '@tanstack/react-router';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
+import { decryptReports } from '@/lib/crypto';
 import { PRIORITY_LABELS, type LocalReport } from '@/lib/types';
 import { PRIORITY_COLOR } from '@/lib/format';
 
 const MapView = lazy(() => import('@/components/MapView'));
 
 export default function MapaPage() {
-  const reports = useLiveQuery(() => db.reports.toArray(), [], [] as LocalReport[]);
+  const [session, setSession] = useState(() => sessionStorage.getItem('admin_role'));
+  useEffect(() => {
+    const handler = () => setSession(sessionStorage.getItem('admin_role'));
+    window.addEventListener('admin-auth-change', handler);
+    return () => window.removeEventListener('admin-auth-change', handler);
+  }, []);
+
+  const reports = useLiveQuery(
+    async () => decryptReports(await db.reports.toArray()),
+    [],
+    [] as LocalReport[],
+  );
 
   const points = useMemo(
     () => (reports ?? []).filter((r) => !r.duplicateOf && r.lat != null && r.lng != null),
     [reports],
   );
+
+  if (!session) {
+    return (
+      <section className="flex flex-col items-center gap-4 rounded-2xl border border-line bg-surface p-10 text-center shadow-card">
+        <h2 className="font-display text-lg font-bold">Acceso restringido</h2>
+        <p className="max-w-md text-sm text-muted">Iniciá sesión para ver el mapa de incidentes.</p>
+        <Link to="/admin" className="btn-primary text-sm">
+          Entrar →
+        </Link>
+      </section>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-3">

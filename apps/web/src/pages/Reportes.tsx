@@ -1,8 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Link } from '@tanstack/react-router';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
-import { advanceStatus } from '@/lib/actions';
+import { decryptReports } from '@/lib/crypto';
 import { ReportCard } from '@/components/ReportCard';
+import { advanceStatus } from '@/lib/actions';
 import {
   INCIDENT_TYPES,
   PRIORITY_LABELS,
@@ -18,7 +20,17 @@ const PRIORITIES: Priority[] = ['critica', 'alta', 'media', 'baja'];
 const STATUSES: Status[] = ['nuevo', 'triage', 'en_proceso', 'resuelto'];
 
 export default function ReportesPage() {
-  const reports = useLiveQuery(() => db.reports.toArray(), [], [] as LocalReport[]);
+  const [session, setSession] = useState(() => sessionStorage.getItem('admin_role'));
+  useEffect(() => {
+    const handler = () => setSession(sessionStorage.getItem('admin_role'));
+    window.addEventListener('admin-auth-change', handler);
+    return () => window.removeEventListener('admin-auth-change', handler);
+  }, []);
+  const reports = useLiveQuery(
+    async () => decryptReports(await db.reports.toArray()),
+    [],
+    [] as LocalReport[],
+  );
   const [q, setQ] = useState('');
   const [type, setType] = useState<IncidentType | ''>('');
   const [priority, setPriority] = useState<Priority | ''>('');
@@ -40,6 +52,23 @@ export default function ReportesPage() {
   }, [reports, q, type, priority, status, showDup]);
 
   const dupCount = (reports ?? []).filter((r) => r.duplicateOf).length;
+
+  if (!session) {
+    return (
+      <section className="flex flex-col items-center gap-4 rounded-2xl border border-line bg-surface p-10 text-center shadow-card">
+        <h2 className="font-display text-lg font-bold">Acceso restringido</h2>
+        <p className="max-w-md text-sm text-muted">
+          Iniciá sesión para ver el listado completo de reportes.
+        </p>
+        <Link to="/admin" className="btn-primary text-sm">
+          Entrar →
+        </Link>
+      </section>
+    );
+  }
+
+  const role = sessionStorage.getItem('admin_role');
+  const canAdvance = role === 'operator' || role === 'admin';
 
   return (
     <div className="flex flex-col gap-4">
@@ -106,7 +135,7 @@ export default function ReportesPage() {
         <p className="card text-sm text-muted">No hay reportes que coincidan.</p>
       )}
       {filtered.map((r) => (
-        <ReportCard key={r.key} report={r} onAdvance={advanceStatus} />
+        <ReportCard key={r.key} report={r} onAdvance={canAdvance ? advanceStatus : undefined} />
       ))}
     </div>
   );

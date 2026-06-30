@@ -3,6 +3,21 @@ import { classify } from '../ai/classifier';
 import { detectDuplicate, findGroupForReport, type DedupeCandidate } from '../ai/dedupe';
 import type { IncidentType, Priority, Report, Source, Status } from '../types';
 
+function isMinorFromText(text: string): boolean {
+  const keywords = [
+    'niño',
+    'niña',
+    'menor',
+    'bebé',
+    'infante',
+    'adolescente',
+    'pequeño',
+    'pequeña',
+    'lactante',
+  ];
+  return keywords.some((k) => text.toLowerCase().includes(k));
+}
+
 // Diccionario local de ubicaciones conocidas → coordenadas (Venezuela).
 // Debe mantenerse sincronizado con el de ai/heuristic.ts.
 const GEO_LOOKUP: { patterns: RegExp[]; lat: number; lng: number }[] = [
@@ -129,6 +144,7 @@ export interface IngestInput {
   reporterName?: string | null;
   reporterPhone?: string | null;
   photoUrl?: string | null;
+  age?: number | null;
   // Overrides manuales (p.ej. el voluntario eligió el tipo en la PWA).
   incidentType?: IncidentType;
   priority?: Priority;
@@ -206,17 +222,18 @@ export async function ingestReport(input: IngestInput): Promise<Report> {
   const duplicateOf = groupResult.parentGroupId;
   const groupRelationType = groupResult.relationType;
 
+  const isMinor = input.age != null && input.age < 18 ? true : isMinorFromText(input.rawText);
   const row = await queryOne<Report>(
     `INSERT INTO reports (
         client_id, source, raw_text, incident_type, priority, status,
         lat, lng, location_text, people_affected, confidence,
         recommended_team, reporter_name, reporter_phone, photo_url,
-        ai_engine, duplicate_of, group_relation_type, created_at
+        age, is_minor, ai_engine, duplicate_of, group_relation_type, created_at
      ) VALUES (
         $1, $2, $3, $4, $5, $6,
         $7, $8, $9, $10, $11,
         $12, $13, $14, $15,
-        $16, $17, $18, COALESCE($19::timestamptz, now())
+        $16, $17, $18, $19, $20, COALESCE($21::timestamptz, now())
      )
      ON CONFLICT (client_id) DO UPDATE SET
         raw_text         = EXCLUDED.raw_text,
@@ -232,6 +249,8 @@ export async function ingestReport(input: IngestInput): Promise<Report> {
         reporter_name    = EXCLUDED.reporter_name,
         reporter_phone   = EXCLUDED.reporter_phone,
         photo_url        = EXCLUDED.photo_url,
+        age              = EXCLUDED.age,
+        is_minor         = EXCLUDED.is_minor,
         ai_engine        = EXCLUDED.ai_engine,
         duplicate_of     = EXCLUDED.duplicate_of,
         group_relation_type = EXCLUDED.group_relation_type,
@@ -253,6 +272,8 @@ export async function ingestReport(input: IngestInput): Promise<Report> {
       (input.reporterName ?? input.source === 'pwa') ? input.reporterName || 'Anónimo' : null,
       input.reporterPhone ?? null,
       input.photoUrl ?? null,
+      input.age ?? null,
+      isMinor,
       cls.engine,
       duplicateOf,
       groupRelationType,

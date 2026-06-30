@@ -1,24 +1,67 @@
 import Dexie, { type Table } from 'dexie';
-import type { LocalReport, ServerReport } from './types';
+import type { AuditEntry, LocalReport, ServerReport } from './types';
+import { encrypt, isCryptoReady } from './crypto';
 
-// Base de datos local (IndexedDB) vía Dexie. Es el corazón del modo offline:
-// todo se guarda primero acá y luego se sincroniza con el servidor.
+const ENCRYPTED_FIELDS = [
+  'reporterName',
+  'reporterPhone',
+  'rawText',
+  'locationText',
+  'photoDataUrl',
+];
+
+async function encryptObj(obj: Record<string, unknown>): Promise<void> {
+  for (const field of ENCRYPTED_FIELDS) {
+    const val = obj[field];
+    if (typeof val === 'string' && val && !val.startsWith('~')) {
+      obj[field] = await encrypt(val);
+    }
+  }
+}
 
 class PdvDatabase extends Dexie {
   reports!: Table<LocalReport, string>;
   meta!: Table<{ id: string; value: string }, string>;
+  audit!: Table<AuditEntry, number>;
 
   constructor() {
     super('puente_de_vida');
-    this.version(1).stores({
-      // Índices secundarios para consultar offline.
+    this.version(2).stores({
       reports: 'key, synced, status, incidentType, priority, updatedAt',
       meta: 'id',
+      audit: '++id, reportKey, synced, createdAt',
     });
   }
 }
 
 export const db = new PdvDatabase();
+
+// Encryption hooks — encrypt sensitive fields before IndexedDB write
+(db.reports.hook as unknown as (name: string, fn: (...args: unknown[]) => unknown) => void)(
+  'creating',
+  (...args: unknown[]) => {
+    if (!isCryptoReady()) return;
+    return encryptObj(args[1] as Record<string, unknown>);
+  },
+);
+(db.reports.hook as unknown as (name: string, fn: (...args: unknown[]) => unknown) => void)(
+  'updating',
+  (...args: unknown[]) => {
+    if (!isCryptoReady()) return;
+    return encryptObj(args[0] as Record<string, unknown>);
+  },
+);
+
+export interface ServerAssignment {
+  id: string;
+  report_id: string;
+  organization_id: string;
+  org_name?: string;
+  status: string;
+  feedback: string | null;
+  area_status: string | null;
+  created_at: string;
+}
 
 export function serverToLocal(r: ServerReport): LocalReport {
   return {
@@ -39,6 +82,8 @@ export function serverToLocal(r: ServerReport): LocalReport {
     reporterName: r.reporter_name,
     reporterPhone: r.reporter_phone,
     photoDataUrl: null,
+    age: r.age,
+    isMinor: r.is_minor,
     duplicateOf: r.duplicate_of,
     groupRelationType: r.group_relation_type,
     groupScore: r.group_score,

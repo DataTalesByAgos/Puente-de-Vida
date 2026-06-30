@@ -30,6 +30,8 @@ CREATE TABLE IF NOT EXISTS reports (
 -- Asegurar columnas en tablas existentes si ya existen
 ALTER TABLE reports ADD COLUMN IF NOT EXISTS group_relation_type TEXT;
 ALTER TABLE reports ADD COLUMN IF NOT EXISTS group_score DOUBLE PRECISION;
+ALTER TABLE reports ADD COLUMN IF NOT EXISTS age INTEGER;
+ALTER TABLE reports ADD COLUMN IF NOT EXISTS is_minor BOOLEAN DEFAULT FALSE;
 
 CREATE INDEX IF NOT EXISTS idx_reports_status      ON reports(status);
 CREATE INDEX IF NOT EXISTS idx_reports_type        ON reports(incident_type);
@@ -124,6 +126,22 @@ CREATE TABLE IF NOT EXISTS audit_log (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- Asignación de reportes a organizaciones
+CREATE TABLE IF NOT EXISTS report_assignments (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  report_id       UUID NOT NULL REFERENCES reports(id) ON DELETE CASCADE,
+  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  assigned_by     TEXT,
+  status          TEXT NOT NULL DEFAULT 'asignado' CHECK (status IN ('asignado', 'confirmado', 'atendido')),
+  feedback        TEXT,
+  area_status     TEXT,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_ra_report ON report_assignments(report_id);
+CREATE INDEX IF NOT EXISTS idx_ra_org ON report_assignments(organization_id);
+
 -- Fuentes externas de datos (APIs de desaparecidos)
 CREATE TABLE IF NOT EXISTS external_sources (
   id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -177,4 +195,13 @@ CREATE TABLE IF NOT EXISTS org_inventory (
 );
 
 CREATE INDEX IF NOT EXISTS idx_org_inv_org ON org_inventory(organization_id);
+
+-- Códigos de invitación para organizaciones
+ALTER TABLE organizations ADD COLUMN IF NOT EXISTS invite_code TEXT UNIQUE;
+CREATE INDEX IF NOT EXISTS idx_org_invite_code ON organizations(invite_code);
+
+-- Cédula y verificación en usuarios
+ALTER TABLE users ADD COLUMN IF NOT EXISTS document_id TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS verified BOOLEAN DEFAULT FALSE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS organization_id UUID REFERENCES organizations(id) ON DELETE SET NULL;
 `;

@@ -2,10 +2,15 @@ import type { IncidentType, Priority, ServerReport, Source, Status } from './typ
 
 export const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000';
 
+function authHeader(): Record<string, string> {
+  const token = sessionStorage.getItem('admin_token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 async function http<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_URL}${path}`, {
     ...init,
-    headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
+    headers: { 'Content-Type': 'application/json', ...authHeader(), ...(init?.headers ?? {}) },
   });
   if (!res.ok) {
     throw new Error(`API ${res.status}: ${await res.text()}`);
@@ -23,6 +28,7 @@ export interface SyncItem {
   reporterName: string | null;
   reporterPhone: string | null;
   photoUrl: string | null;
+  age?: number | null;
   incidentType?: IncidentType;
   priority?: Priority;
   status?: Status;
@@ -71,6 +77,23 @@ export const api = {
     http<ServerReport>(`/api/reports/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(fields),
+    }),
+
+  postAudit: (
+    reportId: string,
+    entries: {
+      action: string;
+      from_status: string | null;
+      to_status: string | null;
+      operator: string;
+      notes: string;
+      detail: Record<string, unknown>;
+      created_at: string;
+    }[],
+  ) =>
+    http<{ ok: boolean }>(`/api/reports/${reportId}/audit`, {
+      method: 'POST',
+      body: JSON.stringify({ entries }),
     }),
 
   stats: () => http<DashboardStats>('/api/dashboard/stats'),

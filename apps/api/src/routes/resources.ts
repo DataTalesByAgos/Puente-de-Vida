@@ -1,6 +1,8 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { query, queryOne } from '../db';
+import { parseAuth, minRole } from '../auth';
+import { filterReport } from '../privacy';
 
 const shelterSchema = z.object({
   name: z.string().min(1).max(160),
@@ -29,13 +31,33 @@ const supplySchema = z.object({
   shelterId: z.string().uuid().nullish(),
 });
 
+function checkViewer(req: { headers?: Record<string, string | string[] | undefined> }): {
+  session: import('../auth').Session | null;
+  allowed: boolean;
+} {
+  const session = parseAuth(req);
+  return { session, allowed: !!session };
+}
+
+function checkOperator(req: { headers?: Record<string, string | string[] | undefined> }): {
+  session: import('../auth').Session | null;
+  allowed: boolean;
+} {
+  const session = parseAuth(req);
+  return { session, allowed: !!session && minRole(session.role, 'operator') };
+}
+
 export async function resourcesRoutes(app: FastifyInstance): Promise<void> {
   // ── Refugios ───────────────────────────────────────────────
-  app.get('/api/shelters', async (_req, reply) => {
+  app.get('/api/shelters', async (req, reply) => {
+    const { allowed } = checkViewer(req);
+    if (!allowed) return reply.status(401).send({ error: 'Se requiere autenticación' });
     return reply.send(await query('SELECT * FROM shelters ORDER BY created_at DESC'));
   });
 
   app.post('/api/shelters', async (req, reply) => {
+    const { allowed } = checkOperator(req);
+    if (!allowed) return reply.status(403).send({ error: 'No autorizado' });
     const parsed = shelterSchema.safeParse(req.body);
     if (!parsed.success) {
       return reply.status(400).send({ error: parsed.error.flatten() });
@@ -50,11 +72,15 @@ export async function resourcesRoutes(app: FastifyInstance): Promise<void> {
   });
 
   // ── Voluntarios ────────────────────────────────────────────
-  app.get('/api/volunteers', async (_req, reply) => {
+  app.get('/api/volunteers', async (req, reply) => {
+    const { allowed } = checkViewer(req);
+    if (!allowed) return reply.status(401).send({ error: 'Se requiere autenticación' });
     return reply.send(await query('SELECT * FROM volunteers ORDER BY last_seen DESC'));
   });
 
   app.post('/api/volunteers', async (req, reply) => {
+    const { allowed } = checkOperator(req);
+    if (!allowed) return reply.status(403).send({ error: 'No autorizado' });
     const parsed = volunteerSchema.safeParse(req.body);
     if (!parsed.success) {
       return reply.status(400).send({ error: parsed.error.flatten() });
@@ -69,11 +95,15 @@ export async function resourcesRoutes(app: FastifyInstance): Promise<void> {
   });
 
   // ── Insumos ────────────────────────────────────────────────
-  app.get('/api/supplies', async (_req, reply) => {
+  app.get('/api/supplies', async (req, reply) => {
+    const { allowed } = checkViewer(req);
+    if (!allowed) return reply.status(401).send({ error: 'Se requiere autenticación' });
     return reply.send(await query('SELECT * FROM supplies ORDER BY category, name'));
   });
 
   app.post('/api/supplies', async (req, reply) => {
+    const { allowed } = checkOperator(req);
+    if (!allowed) return reply.status(403).send({ error: 'No autorizado' });
     const parsed = supplySchema.safeParse(req.body);
     if (!parsed.success) {
       return reply.status(400).send({ error: parsed.error.flatten() });

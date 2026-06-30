@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
+import { initCrypto, resetCrypto } from '@/lib/crypto';
 import { startAutoSync, syncNow } from '@/lib/sync';
 
 interface AppState {
@@ -38,15 +39,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
     window.addEventListener('online', on);
     window.addEventListener('offline', off);
 
-    // Registrar el Service Worker.
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(() => {});
     }
+
+    // Initialize crypto if already logged in
+    const token = sessionStorage.getItem('admin_token');
+    if (token) initCrypto(token).catch(() => {});
+
+    const authHandler = () => {
+      const t = sessionStorage.getItem('admin_token');
+      if (t) initCrypto(t).catch(() => {});
+      else resetCrypto();
+    };
+    window.addEventListener('admin-auth-change', authHandler);
 
     const stop = startAutoSync();
     return () => {
       window.removeEventListener('online', on);
       window.removeEventListener('offline', off);
+      window.removeEventListener('admin-auth-change', authHandler);
       stop();
     };
   }, []);

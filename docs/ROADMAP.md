@@ -12,7 +12,7 @@ Ideas priorizadas para futuras versiones. Si querés aportar una, abrí un issue
 - [ ] **Fuzzing de APIs entrantes** — probar el webhook de WhatsApp y endpoints públicos con entradas maliciosas
 - [ ] **Gestión de secretos** — migrar variables de entorno a un vault (HashiCorp Vault / Infisical) en vez de `.env`
 - [ ] **Penetration test del Service Worker** — verificar que el cacheo y background sync no filtren datos sensibles entre sesiones
-- [ ] **Rate limiting por IP** — evitar abuso en endpoints de login y creación de reportes (express-rate-limit o similar)
+- [x] **Rate limiting por IP** — implementado con `@fastify/rate-limit`: 100 global, 5 en login. Pendiente probar bajo carga real y auditar configuración.
 - [ ] **Validación de entrada con Zod** — reemplazar validaciones manuales en rutas API por esquemas tipados
 
 ## Revisión y mejoras de código
@@ -27,7 +27,7 @@ Ideas priorizadas para futuras versiones. Si querés aportar una, abrí un issue
 ## Corto plazo
 
 - [ ] **Hot-reload de configuración** — que los cambios de proveedores en el panel Admin se apliquen sin reiniciar la API
-- [ ] **Autenticación persistente** — migrar de sesiones en memoria a Redis o JWT con refresh tokens
+- [ ] **Autenticación persistente** — migrar de sesiones en memoria (hoy con TTL 24h) a Redis o JWT con refresh tokens para que sobrevivan reinicios
 - [ ] **Notificaciones push** — que el SW reciba push events cuando hay reportes nuevos de alta prioridad
 - [ ] **Internacionalización** — soporte para inglés y portugués (además del español actual)
 - [ ] **Exportar PDF** — generar reportes consolidados imprimibles
@@ -59,7 +59,7 @@ Estos items no requieren cambiar código — solo agregar servicios externos y c
 - [ ] **CDN para assets estáticos** — servir el frontend desde Cloudflare Pages, Vercel Edge o Netlify. Carga instantánea en cualquier país.
 - [ ] **Read replicas de PostgreSQL** — separar lecturas (dashboard, stats) de escrituras (reportes entrantes). Las queries pesadas de analytics no compiten con la ingesta de reportes.
 - [ ] **Backups automáticos a cloud storage** — pg_dump comprimido subido a S3/R2/Backblaze cada N horas con retención configurable. Sin infraestructura extra, los backups hay que hacerlos a mano.
-- [ ] **Rate limiting por IP con Redis** — evitar que un atacante queme el endpoint de login o el webhook de WhatsApp. Sin Redis, el rate limit es por proceso y no funciona con múltiples instancias.
+- [ ] **Rate limiting distribuido con Redis** — hoy funciona en monoproceso (en memoria). Con Redis, el rate limit es compartido entre todas las instancias detrás del balanceador.
 - [ ] **Monitoreo y alertas** — conectar Sentry para errores, Grafana para métricas (conteo de reportes, tiempo de respuesta, tasa de sync). Detectar problemas antes que los usuarios.
 - [ ] **Multi-instancia con balanceador** — correr la API detrás de un load balancer (nginx / Traefik / Cloudflare). Escalar horizontalmente cuando una sola instancia no da abasto.
 - [ ] **Analytics de respuesta** — medir tiempos de atención por organización reporte por reporte. Identificar cuellos de botella en la cadena de emergencia.

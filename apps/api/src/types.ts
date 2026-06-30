@@ -57,6 +57,8 @@ export interface Report {
   reporter_phone: string | null;
   photo_url: string | null;
   ai_engine: string | null;
+  age: number | null;
+  is_minor: boolean | null;
   duplicate_of: string | null;
   group_relation_type: 'mismo_suceso' | 'en_cadena' | null;
   group_score: number | null;

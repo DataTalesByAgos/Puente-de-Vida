@@ -1,5 +1,6 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { config } from '../config';
+import { parseAuth, minRole } from '../auth';
 import { ingestReport } from '../services/reports';
 import { buildAutoReply, getWhatsappStatus, sendWhatsappMessage } from '../services/whatsapp';
 
@@ -117,12 +118,19 @@ export async function whatsappRoutes(app: FastifyInstance): Promise<void> {
 
   // Estado del canal: "demo emulado" o "conectado a un proveedor real".
   // Lo usa la UI del simulador para mostrar el contexto al usuario.
-  app.get('/api/whatsapp/status', async () => getWhatsappStatus());
+  app.get('/api/whatsapp/status', async (req, reply) => {
+    const s = parseAuth(req);
+    if (!s) return reply.status(401).send({ error: 'Se requiere autenticación' });
+    return getWhatsappStatus();
+  });
 
   // Simulador: ingresa un mensaje "como si" llegara por WhatsApp y devuelve la
   // respuesta automática del bot. Permite probar todo el flujo (incluida la IA
   // real del servidor) sin contratar ningún proveedor. No envía nada externo.
   app.post('/api/whatsapp/simulate', async (req, reply) => {
+    const s = parseAuth(req);
+    if (!s || !minRole(s.role, 'operator'))
+      return reply.status(403).send({ error: 'No autorizado' });
     const body = (req.body ?? {}) as Record<string, unknown>;
     const text = typeof body.text === 'string' ? body.text.trim() : '';
     const phone = typeof body.phone === 'string' ? body.phone.trim() : null;

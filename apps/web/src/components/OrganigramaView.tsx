@@ -65,12 +65,14 @@ export default function OrganigramaView({
   token,
   adminFetch,
   roleLevel,
+  onNavigateToInventory,
 }: {
   orgs: Org[];
   vols: Vol[];
   token: string;
   adminFetch: (path: string, token: string, opts?: Record<string, unknown>) => Promise<any>;
   roleLevel: number;
+  onNavigateToInventory?: (orgId: string) => void;
 }) {
   const [orgs, setOrgs] = useState(initialOrgs);
   const [vols, setVols] = useState(initialVols);
@@ -89,21 +91,6 @@ export default function OrganigramaView({
   const [activeCategory, setActiveCategory] = useState('todas');
   const [modalOpen, setModalOpen] = useState<'org' | 'vol' | null>(null);
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
-  const [invOpen, setInvOpen] = useState<string | null>(null);
-  const [invData, setInvData] = useState<
-    Record<
-      string,
-      {
-        id: string;
-        item_name: string;
-        category: string;
-        quantity: number;
-        unit: string;
-        notes: string | null;
-      }[]
-    >
-  >({});
-  const [invForm, setInvForm] = useState<Record<string, Record<string, unknown>>>({});
 
   // Org form state
   const [orgForm, setOrgForm] = useState({
@@ -177,48 +164,6 @@ export default function OrganigramaView({
   }, [orgs]);
 
   const sortedCategories = ['gobierno', 'ong', 'privado', 'comunitario', 'religioso'];
-
-  async function toggleInv(orgId: string) {
-    if (invOpen === orgId) {
-      setInvOpen(null);
-      return;
-    }
-    setInvOpen(orgId);
-    if (!invData[orgId]) {
-      try {
-        const rows = (await adminFetch(`/api/admin/orgs/${orgId}/inventory`, token)) as {
-          id: string;
-          item_name: string;
-          category: string;
-          quantity: number;
-          unit: string;
-          notes: string | null;
-        }[];
-        setInvData((p) => ({ ...p, [orgId]: rows }));
-      } catch {
-        /* ignore */
-      }
-    }
-  }
-
-  async function addInvItem(orgId: string) {
-    const form = (invForm[orgId] ?? {}) as Record<string, unknown>;
-    if (!form.item_name) return;
-    await adminFetch(`/api/admin/orgs/${orgId}/inventory`, token, {
-      method: 'POST',
-      body: JSON.stringify(form),
-    });
-    setInvForm((p) => ({ ...p, [orgId]: {} }));
-    const rows = (await adminFetch(`/api/admin/orgs/${orgId}/inventory`, token)) as any[];
-    setInvData((p) => ({ ...p, [orgId]: rows }));
-  }
-
-  async function delInvItem(itemId: string, orgId: string) {
-    if (!confirm('¿Eliminar este item?')) return;
-    await adminFetch(`/api/admin/inventory/${itemId}`, token, { method: 'DELETE' });
-    const rows = (await adminFetch(`/api/admin/orgs/${orgId}/inventory`, token)) as any[];
-    setInvData((p) => ({ ...p, [orgId]: rows }));
-  }
 
   // Delete org
   async function deleteOrg(id: string, name: string) {
@@ -327,44 +272,45 @@ export default function OrganigramaView({
                     </div>
                   </div>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    {items.map((org) => {
-                      const members = vols.filter((v) => v.organization_id === org.id);
-                      return (
-                        <div
-                          key={org.id}
-                          className="relative rounded-xl border border-line bg-surface p-4 shadow-card transition hover:shadow-md"
-                        >
-                          <div className="flex items-start gap-3">
-                            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-paper text-xl">
-                              {config.icon}
-                            </span>
-                            <div className="min-w-0 flex-1">
-                              <h3 className="font-display text-sm font-bold text-ink truncate">
-                                {org.name}
-                              </h3>
-                              {org.contact_name && (
-                                <p className="mt-1 flex items-center gap-1.5 text-xs text-muted">
-                                  <span>👤</span> {org.contact_name}
-                                </p>
-                              )}
-                              {org.contact_phone && (
-                                <p className="flex items-center gap-1.5 text-xs text-muted">
-                                  <span>📞</span> {org.contact_phone}
-                                </p>
-                              )}
-                              {org.location && (
-                                <p className="flex items-center gap-1.5 text-xs text-muted">
-                                  <span>📍</span> {org.location}
-                                </p>
-                              )}
-                              {org.description && (
-                                <p className="mt-1 text-[11px] text-muted/70 line-clamp-1">
-                                  {org.description}
-                                </p>
-                              )}
-                              {members.length > 0 && (
-                                <div className="mt-2 flex flex-wrap gap-1">
-                                  {members.slice(0, 3).map((v) => (
+                    {items.map((org) => (
+                      <div
+                        key={org.id}
+                        className="relative rounded-xl border border-line bg-surface p-4 shadow-card transition hover:shadow-md"
+                      >
+                        <div className="flex items-start gap-3">
+                          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-paper text-xl">
+                            {config.icon}
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <h3 className="font-display text-sm font-bold text-ink truncate">
+                              {org.name}
+                            </h3>
+                            {org.contact_name && (
+                              <p className="mt-1 flex items-center gap-1.5 text-xs text-muted">
+                                <span>👤</span> {org.contact_name}
+                              </p>
+                            )}
+                            {org.contact_phone && (
+                              <p className="flex items-center gap-1.5 text-xs text-muted">
+                                <span>📞</span> {org.contact_phone}
+                              </p>
+                            )}
+                            {org.location && (
+                              <p className="flex items-center gap-1.5 text-xs text-muted">
+                                <span>📍</span> {org.location}
+                              </p>
+                            )}
+                            {org.description && (
+                              <p className="mt-1 text-[11px] text-muted/70 line-clamp-1">
+                                {org.description}
+                              </p>
+                            )}
+                            {vols.filter((v) => v.organization_id === org.id).length > 0 && (
+                              <div className="mt-2 flex flex-wrap gap-1">
+                                {vols
+                                  .filter((v) => v.organization_id === org.id)
+                                  .slice(0, 3)
+                                  .map((v) => (
                                     <span
                                       key={v.id}
                                       className="rounded-full bg-paper px-2 py-0.5 text-[10px] text-muted border border-line truncate max-w-28"
@@ -372,145 +318,68 @@ export default function OrganigramaView({
                                       {v.name}
                                     </span>
                                   ))}
-                                  {members.length > 3 && (
-                                    <span className="text-[10px] text-muted">
-                                      +{members.length - 3}
-                                    </span>
-                                  )}
-                                </div>
-                              )}
-                              {roleLevel >= 1 && (
-                                <button
-                                  onClick={() => toggleInv(org.id)}
-                                  className="mt-1.5 flex items-center gap-1 text-[10px] text-muted hover:text-ink transition"
-                                >
-                                  📦 {invOpen === org.id ? 'Ocultar inventario' : 'Ver inventario'}
-                                </button>
-                              )}
-                            </div>
-                            {/* 3-dot menu */}
-                            <div className="relative shrink-0">
+                                {vols.filter((v) => v.organization_id === org.id).length > 3 && (
+                                  <span className="text-[10px] text-muted">
+                                    +{vols.filter((v) => v.organization_id === org.id).length - 3}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                            {roleLevel >= 1 && onNavigateToInventory && (
                               <button
-                                onClick={() => setMenuOpen(menuOpen === org.id ? null : org.id)}
-                                className="grid h-8 w-8 place-items-center rounded-lg text-muted hover:bg-paper hover:text-ink transition"
+                                onClick={() => onNavigateToInventory(org.id)}
+                                className="mt-1.5 flex items-center gap-1 text-[10px] text-muted hover:text-ink transition"
                               >
-                                ⋯
+                                📦 Ver inventario
                               </button>
-                              {menuOpen === org.id && (
-                                <div className="absolute right-0 top-full z-20 mt-1 min-w-36 rounded-xl border border-line bg-surface py-1 shadow-card">
+                            )}
+                          </div>
+                          {/* 3-dot menu */}
+                          <div className="relative shrink-0">
+                            <button
+                              onClick={() => setMenuOpen(menuOpen === org.id ? null : org.id)}
+                              className="grid h-8 w-8 place-items-center rounded-lg text-muted hover:bg-paper hover:text-ink transition"
+                            >
+                              ⋯
+                            </button>
+                            {menuOpen === org.id && (
+                              <div className="absolute right-0 top-full z-20 mt-1 min-w-36 rounded-xl border border-line bg-surface py-1 shadow-card">
+                                <button
+                                  onClick={() => {
+                                    setMenuOpen(null);
+                                    setOrgForm({
+                                      name: org.name,
+                                      category: org.category,
+                                      description: org.description ?? '',
+                                      contact_name: org.contact_name ?? '',
+                                      contact_phone: org.contact_phone ?? '',
+                                      location: org.location ?? '',
+                                      parent_id: org.parent_id ?? '',
+                                    });
+                                    setModalOpen('org');
+                                  }}
+                                  className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-ink hover:bg-paper transition"
+                                >
+                                  ✏️ Editar
+                                </button>
+                                <hr className="my-1 border-line" />
+                                {roleLevel >= 2 && (
                                   <button
                                     onClick={() => {
                                       setMenuOpen(null);
-                                      setOrgForm({
-                                        name: org.name,
-                                        category: org.category,
-                                        description: org.description ?? '',
-                                        contact_name: org.contact_name ?? '',
-                                        contact_phone: org.contact_phone ?? '',
-                                        location: org.location ?? '',
-                                        parent_id: org.parent_id ?? '',
-                                      });
-                                      setModalOpen('org');
+                                      deleteOrg(org.id, org.name);
                                     }}
-                                    className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-ink hover:bg-paper transition"
+                                    className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-coralInk hover:bg-paper transition"
                                   >
-                                    ✏️ Editar
+                                    🗑️ Eliminar
                                   </button>
-                                  <hr className="my-1 border-line" />
-                                  {roleLevel >= 2 && (
-                                    <button
-                                      onClick={() => {
-                                        setMenuOpen(null);
-                                        deleteOrg(org.id, org.name);
-                                      }}
-                                      className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-coralInk hover:bg-paper transition"
-                                    >
-                                      🗑️ Eliminar
-                                    </button>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                          {/* Inventario expandible */}
-                          {invOpen === org.id && (
-                            <div className="mt-3 border-t border-line pt-3">
-                              <p className="mb-2 text-[11px] font-semibold text-muted uppercase tracking-wider">
-                                📦 Inventario
-                              </p>
-                              {(invData[org.id] ?? []).length === 0 && (
-                                <p className="text-[11px] text-muted/60 mb-2">
-                                  Sin items registrados.
-                                </p>
-                              )}
-                              {(invData[org.id] ?? []).map((item) => (
-                                <div
-                                  key={item.id}
-                                  className="flex items-center gap-2 rounded-lg bg-paper px-2.5 py-1.5 mb-1"
-                                >
-                                  <span className="flex-1 text-xs text-ink">{item.item_name}</span>
-                                  <span className="text-[10px] text-muted tabular-nums">
-                                    {item.quantity} {item.unit}
-                                  </span>
-                                  <span className="text-[10px] text-muted">{item.category}</span>
-                                  <button
-                                    onClick={() => delInvItem(item.id, org.id)}
-                                    className="text-[10px] text-muted hover:text-coralInk transition"
-                                  >
-                                    ✕
-                                  </button>
-                                </div>
-                              ))}
-                              <div className="mt-2 flex gap-1.5">
-                                <input
-                                  className="flex-1 rounded-lg border border-line bg-paper px-2 py-1 text-[11px] outline-none focus:border-coral"
-                                  placeholder="Item"
-                                  value={(invForm[org.id]?.item_name as string) ?? ''}
-                                  onChange={(e) =>
-                                    setInvForm((p) => ({
-                                      ...p,
-                                      [org.id]: { ...(p[org.id] ?? {}), item_name: e.target.value },
-                                    }))
-                                  }
-                                />
-                                <input
-                                  className="w-16 rounded-lg border border-line bg-paper px-2 py-1 text-[11px] outline-none focus:border-coral"
-                                  placeholder="Cant"
-                                  type="number"
-                                  value={(invForm[org.id]?.quantity as string) ?? ''}
-                                  onChange={(e) =>
-                                    setInvForm((p) => ({
-                                      ...p,
-                                      [org.id]: {
-                                        ...(p[org.id] ?? {}),
-                                        quantity: parseInt(e.target.value) || 0,
-                                      },
-                                    }))
-                                  }
-                                />
-                                <input
-                                  className="w-12 rounded-lg border border-line bg-paper px-2 py-1 text-[11px] outline-none focus:border-coral"
-                                  placeholder="Ud."
-                                  value={(invForm[org.id]?.unit as string) ?? 'u'}
-                                  onChange={(e) =>
-                                    setInvForm((p) => ({
-                                      ...p,
-                                      [org.id]: { ...(p[org.id] ?? {}), unit: e.target.value },
-                                    }))
-                                  }
-                                />
-                                <button
-                                  onClick={() => addInvItem(org.id)}
-                                  className="rounded-lg bg-coral px-2.5 py-1 text-[11px] font-semibold text-white hover:brightness-110 transition"
-                                >
-                                  +
-                                </button>
+                                )}
                               </div>
-                            </div>
-                          )}
+                            )}
+                          </div>
                         </div>
-                      );
-                    })}
+                      </div>
+                    ))}
                   </div>
                 </section>
               );
@@ -646,7 +515,7 @@ export default function OrganigramaView({
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Modal org/vol */}
       {modalOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"

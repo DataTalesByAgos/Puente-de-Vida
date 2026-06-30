@@ -49,12 +49,8 @@ export default function MapView({ reports }: { reports: LocalReport[] }) {
         fillOpacity: 0.7,
         weight: 2,
       });
-      const contact =
-        r.reporterName || r.reporterPhone
-          ? `<br/>👤 ${r.reporterName ?? 'Anónimo'}${r.reporterPhone ? ` · ${r.reporterPhone.slice(0, 8)}···` : ''}`
-          : '';
       marker.bindPopup(
-        `<strong>${TYPE_LABELS[r.incidentType]}</strong> · ${PRIORITY_LABELS[r.priority]}${contact}<br/>📍 ${r.locationText ?? 'sin dirección'}<br/><em>${r.rawText.slice(0, 120)}</em>`,
+        `<strong>${TYPE_LABELS[r.incidentType]}</strong> · ${PRIORITY_LABELS[r.priority]}<br/>📍 ${r.locationText ?? 'sin dirección'}<br/><em>${r.rawText.slice(0, 120)}</em>`,
       );
       marker.addTo(layer);
     }

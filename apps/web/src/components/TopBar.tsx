@@ -58,7 +58,10 @@ export function TopBar() {
         </Link>
 
         <nav className="ml-1 flex flex-1 items-center gap-1 overflow-x-auto">
-          {NAV.map((item) => {
+          {NAV.filter((item) => {
+            if (item.href === '/reportes' || item.href === '/mapa') return !!session;
+            return true;
+          }).map((item) => {
             const active = pathname === item.href;
             return (
               <Link

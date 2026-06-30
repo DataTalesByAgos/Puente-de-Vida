@@ -3,6 +3,9 @@ import { z } from 'zod';
 import { INCIDENT_TYPES, PRIORITIES, SOURCES, STATUSES } from '../types';
 import { ingestReport } from '../services/reports';
 import { query } from '../db';
+import { photoUrlSchema } from '../photo';
+import { parseAuth } from '../auth';
+import { filterReport } from '../privacy';
 import type { Report } from '../types';
 
 const itemSchema = z.object({
@@ -14,7 +17,8 @@ const itemSchema = z.object({
   locationText: z.string().max(200).nullish(),
   reporterName: z.string().max(120).nullish(),
   reporterPhone: z.string().max(40).nullish(),
-  photoUrl: z.string().max(2000).nullish(),
+  photoUrl: photoUrlSchema,
+  age: z.number().int().min(0).max(150).nullish(),
   incidentType: z.enum(INCIDENT_TYPES).optional(),
   priority: z.enum(PRIORITIES).optional(),
   status: z.enum(STATUSES).optional(),
@@ -52,6 +56,7 @@ export async function syncRoutes(app: FastifyInstance): Promise<void> {
 
   // PULL: el cliente baja los cambios desde la última sincronización.
   app.get('/api/sync', async (req, reply) => {
+    const s = parseAuth(req);
     const parsed = pullSchema.safeParse(req.query);
     if (!parsed.success) {
       return reply.status(400).send({ error: parsed.error.flatten() });
@@ -64,6 +69,11 @@ export async function syncRoutes(app: FastifyInstance): Promise<void> {
         LIMIT 500`,
       [since],
     );
-    return reply.send({ now: new Date().toISOString(), reports });
+    const filtered = s
+      ? reports
+      : (reports.map((r) =>
+          filterReport(r as unknown as Record<string, unknown>, null),
+        ) as unknown as Report[]);
+    return reply.send({ now: new Date().toISOString(), reports: filtered });
   });
 }

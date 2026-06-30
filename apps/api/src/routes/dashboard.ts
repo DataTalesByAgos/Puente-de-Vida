@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { query, queryOne } from '../db';
+import { parseAuth, minRole } from '../auth';
 import { generateSummary, type SummaryInput } from '../ai/summary';
 
 export async function dashboardRoutes(app: FastifyInstance): Promise<void> {
@@ -52,7 +53,10 @@ export async function dashboardRoutes(app: FastifyInstance): Promise<void> {
   });
 
   // Resumen de situación generado por IA (con respaldo heurístico).
-  app.post('/api/dashboard/summary', async (_req, reply) => {
+  app.post('/api/dashboard/summary', async (req, reply) => {
+    const s = parseAuth(req);
+    if (!s || !minRole(s.role, 'operator'))
+      return reply.status(403).send({ error: 'No autorizado' });
     const reports = await query<SummaryInput>(
       `SELECT incident_type, priority, status, people_affected, location_text
          FROM reports
@@ -69,7 +73,9 @@ export async function dashboardRoutes(app: FastifyInstance): Promise<void> {
     return reply.send(saved);
   });
 
-  app.get('/api/dashboard/summary', async (_req, reply) => {
+  app.get('/api/dashboard/summary', async (req, reply) => {
+    const s = parseAuth(req);
+    if (!s) return reply.status(401).send({ error: 'Se requiere autenticación' });
     const latest = await queryOne(`SELECT * FROM ai_summaries ORDER BY created_at DESC LIMIT 1`);
     return reply.send(latest ?? null);
   });

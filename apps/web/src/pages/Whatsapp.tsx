@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
+import { decryptReports } from '@/lib/crypto';
 import { api, type WhatsappStatus } from '@/lib/api';
 import { buildCitizenReply } from '@/lib/whatsapp';
 import { PRIORITY_LABELS, TYPE_ICONS, TYPE_LABELS, type LocalReport } from '@/lib/types';
@@ -31,7 +32,11 @@ function waText(text: string) {
 }
 
 export default function WhatsappPage() {
-  const reports = useLiveQuery(() => db.reports.toArray(), [], [] as LocalReport[]);
+  const reports = useLiveQuery(
+    async () => decryptReports(await db.reports.toArray()),
+    [],
+    [] as LocalReport[],
+  );
 
   const messages = useMemo(
     () =>

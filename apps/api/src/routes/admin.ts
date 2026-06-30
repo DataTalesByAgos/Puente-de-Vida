@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { query } from '../db';
 import { config } from '../config';
-import { sessions, hashPass, parseAuth, createSession, minRole, PERM } from '../auth';
+import { sessions, hashPass, parseAuth, createSession, minRole, PERM, parseCookie } from '../auth';
 
 // ---------------------------------------------------------------------------
 // Panel de administración: login, usuarios, stats, export, config, auditoría.
@@ -57,6 +57,10 @@ export async function adminRoutes(app: FastifyInstance): Promise<void> {
             timingSafeEqual(Buffer.from(inputHash), Buffer.from(storedHash))
           ) {
             const token = createSession(dbUser.id, dbUser.username, dbUser.role);
+            reply.header(
+              'set-cookie',
+              `pdv_token=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=86400`,
+            );
             return reply.send({ token, username: dbUser.username, role: dbUser.role });
           }
           logFailed('bad_password');
@@ -71,6 +75,10 @@ export async function adminRoutes(app: FastifyInstance): Promise<void> {
         timingSafeEqual(Buffer.from(String(pass ?? '')), Buffer.from(envPass))
       ) {
         const token = createSession('env', envUser, envRole);
+        reply.header(
+          'set-cookie',
+          `pdv_token=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=86400`,
+        );
         return reply.send({ token, username: envUser, role: envRole });
       }
 
@@ -86,6 +94,9 @@ export async function adminRoutes(app: FastifyInstance): Promise<void> {
       '',
     );
     if (token) sessions.delete(token);
+    const cookieToken = parseCookie(req.headers?.['cookie']);
+    if (cookieToken) sessions.delete(cookieToken);
+    reply.header('set-cookie', 'pdv_token=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0');
     return reply.send({ ok: true });
   });
 

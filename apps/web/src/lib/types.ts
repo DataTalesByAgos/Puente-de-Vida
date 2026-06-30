@@ -34,6 +34,8 @@ export interface ServerReport {
   reporter_name: string | null;
   reporter_phone: string | null;
   photo_url: string | null;
+  age: number | null;
+  is_minor: boolean | null;
   ai_engine: string | null;
   duplicate_of: string | null;
   group_relation_type: 'mismo_suceso' | 'en_cadena' | null;
@@ -61,12 +63,16 @@ export interface LocalReport {
   reporterName: string | null;
   reporterPhone: string | null;
   photoDataUrl: string | null;
+  age: number | null;
+  isMinor: boolean | null;
   duplicateOf: string | null;
   groupRelationType: 'mismo_suceso' | 'en_cadena' | null;
   groupScore: number | null;
   createdAt: string;
   updatedAt: string;
   synced: 0 | 1; // 0 = pendiente de subir
+  assignedOrgId?: string | null;
+  assignedOrgStatus?: string | null;
 }
 
 export const TYPE_LABELS: Record<IncidentType, string> = {
@@ -113,6 +119,19 @@ export interface SourceMeta {
   icon: string;
   // Clases de Tailwind para el "badge" del canal.
   chip: string;
+}
+
+export interface AuditEntry {
+  id?: number;
+  reportKey: string;
+  action: string;
+  fromStatus: Status | null;
+  toStatus: Status | null;
+  operator: string;
+  notes: string;
+  detail: Record<string, unknown>;
+  createdAt: string;
+  synced: 0 | 1;
 }
 
 export const SOURCE_META: Record<Source, SourceMeta> = {

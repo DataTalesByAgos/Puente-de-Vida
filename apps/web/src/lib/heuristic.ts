@@ -40,6 +40,7 @@ const HIGH = ['herido', 'derrumb', 'incendio', 'desaparec', 'inund', 'embaraz', 
 export function classifyLocal(text: string): {
   incidentType: IncidentType;
   priority: Priority;
+  age: number | null;
 } {
   const t = norm(text);
   let incidentType: IncidentType = 'otro';
@@ -54,5 +55,10 @@ export function classifyLocal(text: string): {
   else if (HIGH.some((w) => t.includes(w))) priority = 'alta';
   else if (['medico', 'rescate', 'desaparecido', 'estructural'].includes(incidentType))
     priority = 'alta';
-  return { incidentType, priority };
+
+  // Extract age from text patterns like "30 años", "5 meses", "2 años"
+  const ageMatch = text.match(/(\d+)\s*(años|meses|año)/i);
+  const age = ageMatch ? parseInt(ageMatch[1], 10) : null;
+
+  return { incidentType, priority, age };
 }

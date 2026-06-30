@@ -14,12 +14,16 @@ function fileToDataUrl(file: File): Promise<string> {
   });
 }
 
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3 MB
+
 export default function ReportarPage() {
   const { online } = useApp();
   const [text, setText] = useState('');
   const [name, setName] = useState('');
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [photo, setPhoto] = useState<string | null>(null);
+  const [photoError, setPhotoError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
   const [geoMsg, setGeoMsg] = useState('');
@@ -44,7 +48,19 @@ export default function ReportarPage() {
 
   async function onPhoto(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (file) setPhoto(await fileToDataUrl(file));
+    if (!file) return;
+    setPhotoError(null);
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      setPhotoError('Solo JPEG, PNG y WebP.');
+      return;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      setPhotoError(
+        `La foto no debe superar los 3 MB (este archivo pesa ${(file.size / 1024 / 1024).toFixed(1)} MB).`,
+      );
+      return;
+    }
+    setPhoto(await fileToDataUrl(file));
   }
 
   async function submit() {
@@ -142,7 +158,7 @@ export default function ReportarPage() {
             📷 Adjuntar foto
             <input
               type="file"
-              accept="image/*"
+              accept=".jpg,.jpeg,.png,.webp"
               capture="environment"
               className="hidden"
               onChange={onPhoto}
@@ -151,8 +167,11 @@ export default function ReportarPage() {
           {photo ? (
             <img src={photo} alt="adjunto" className="h-20 w-full rounded-lg object-cover" />
           ) : (
-            <p className="text-xs text-muted">Se guarda en el dispositivo.</p>
+            <p className="text-xs text-muted">
+              JPEG, PNG o WebP · máx 3 MB. Se guarda en el dispositivo.
+            </p>
           )}
+          {photoError && <p className="text-xs text-red-500">{photoError}</p>}
         </div>
       </div>
 

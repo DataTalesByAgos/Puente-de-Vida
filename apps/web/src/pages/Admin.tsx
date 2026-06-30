@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { API_URL } from '@/lib/api';
+import { initCrypto, resetCrypto } from '@/lib/crypto';
 import OrganigramaView from '@/components/OrganigramaView';
 
 type AdminStats = {
@@ -37,6 +38,7 @@ const ROLE_COLORS: Record<string, string> = {
 const TABS = [
   { id: 'stats', label: '📊 Estadísticas', minRole: 'viewer' },
   { id: 'orgs', label: '🏛️ Organizaciones', minRole: 'operator' },
+  { id: 'inventory', label: '📦 Inventario', minRole: 'operator' },
   { id: 'missing', label: '🔍 Desaparecidos', minRole: 'viewer' },
   { id: 'users', label: '👥 Usuarios', minRole: 'admin' },
   { id: 'config', label: '⚙️ Configuración', minRole: 'admin' },
@@ -135,6 +137,30 @@ export default function AdminPage() {
   >([]);
   const [apiErr, setApiErr] = useState('');
 
+  // Inventory state
+  const [invFilterOrg, setInvFilterOrg] = useState<string>('');
+  const [invSearch, setInvSearch] = useState('');
+  const [invItems, setInvItems] = useState<
+    {
+      id: string;
+      item_name: string;
+      category: string;
+      quantity: number;
+      unit: string;
+      notes: string | null;
+      organization_id: string;
+      org_name: string;
+    }[]
+  >([]);
+  const [invForm, setInvForm] = useState({
+    organization_id: '',
+    item_name: '',
+    category: 'general',
+    quantity: 0,
+    unit: 'u',
+    notes: '',
+  });
+
   // Org chart state
   const [orgs, setOrgs] = useState<
     {
@@ -190,6 +216,10 @@ export default function AdminPage() {
           setOrgs(await apiAdmin('/api/admin/orgs', token));
           setVols(await apiAdmin('/api/admin/volunteers', token));
         }
+        if (roleLevel >= 1 && tab === 'inventory') {
+          if (orgs.length === 0) setOrgs(await apiAdmin('/api/admin/orgs', token));
+          setInvItems(await apiAdmin('/api/admin/inventory', token));
+        }
       } catch (err) {
         setApiErr(String(err));
         setToken(null);
@@ -219,6 +249,7 @@ export default function AdminPage() {
       sessionStorage.setItem('admin_token', data.token);
       sessionStorage.setItem('admin_user', data.username);
       sessionStorage.setItem('admin_role', data.role);
+      initCrypto(data.token).catch(() => {});
       window.dispatchEvent(new Event('admin-auth-change'));
     } catch {
       setLoginErr('Error de conexión');
@@ -229,6 +260,7 @@ export default function AdminPage() {
     if (token) apiAdmin('/api/admin/logout', token).catch(() => {});
     setToken(null);
     setSession(null);
+    resetCrypto();
     sessionStorage.removeItem('admin_token');
     sessionStorage.removeItem('admin_user');
     sessionStorage.removeItem('admin_role');
@@ -693,7 +725,202 @@ export default function AdminPage() {
             token={token!}
             adminFetch={apiAdmin}
             roleLevel={roleLevel}
+            onNavigateToInventory={(orgId) => {
+              setInvFilterOrg(orgId);
+              setTab('inventory');
+            }}
           />
+        )}
+
+        {/* ── Inventario ────────────────────────────────────────────────── */}
+        {tab === 'inventory' && canManageOrgs && (
+          <Section title="Inventario de organizaciones">
+            <div className="flex flex-wrap gap-3 mb-4">
+              <select
+                value={invFilterOrg}
+                onChange={(e) => setInvFilterOrg(e.target.value)}
+                className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
+              >
+                <option value="">Todas las organizaciones</option>
+                {orgs.map((o) => (
+                  <option key={o.id} value={o.id}>
+                    {o.name}
+                  </option>
+                ))}
+              </select>
+              <input
+                value={invSearch}
+                onChange={(e) => setInvSearch(e.target.value)}
+                placeholder="Buscar por nombre..."
+                className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 w-64"
+              />
+            </div>
+
+            {/* Formulario de alta */}
+            <details className="mb-4">
+              <summary className="cursor-pointer text-sm font-medium text-gray-700 hover:text-gray-900">
+                + Agregar item
+              </summary>
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  const body = {
+                    item_name: invForm.item_name,
+                    category: invForm.category,
+                    quantity: invForm.quantity,
+                    unit: invForm.unit,
+                    notes: invForm.notes || undefined,
+                  };
+                  await apiAdmin(`/api/admin/orgs/${invForm.organization_id}/inventory`, token!, {
+                    method: 'POST',
+                    body: JSON.stringify(body),
+                  });
+                  setInvItems(await apiAdmin('/api/admin/inventory', token!));
+                  setInvForm({
+                    organization_id: '',
+                    item_name: '',
+                    category: 'general',
+                    quantity: 0,
+                    unit: 'u',
+                    notes: '',
+                  });
+                }}
+                className="mt-2 flex flex-wrap items-end gap-3 rounded-lg border border-gray-200 bg-gray-50 p-4"
+              >
+                <label className="flex flex-col gap-1 text-xs font-medium text-gray-600">
+                  Organización
+                  <select
+                    required
+                    value={invForm.organization_id}
+                    onChange={(e) => setInvForm((f) => ({ ...f, organization_id: e.target.value }))}
+                    className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
+                  >
+                    <option value="">—</option>
+                    {orgs.map((o) => (
+                      <option key={o.id} value={o.id}>
+                        {o.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="flex flex-col gap-1 text-xs font-medium text-gray-600">
+                  Item
+                  <input
+                    required
+                    value={invForm.item_name}
+                    onChange={(e) => setInvForm((f) => ({ ...f, item_name: e.target.value }))}
+                    className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
+                  />
+                </label>
+                <label className="flex flex-col gap-1 text-xs font-medium text-gray-600">
+                  Categoría
+                  <select
+                    value={invForm.category}
+                    onChange={(e) => setInvForm((f) => ({ ...f, category: e.target.value }))}
+                    className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
+                  >
+                    <option value="general">General</option>
+                    <option value="medico">Médico</option>
+                    <option value="alimento">Alimento</option>
+                    <option value="higiene">Higiene</option>
+                    <option value="herramienta">Herramienta</option>
+                    <option value="comunicacion">Comunicación</option>
+                    <option value="transporte">Transporte</option>
+                    <option value="otro">Otro</option>
+                  </select>
+                </label>
+                <label className="flex flex-col gap-1 text-xs font-medium text-gray-600">
+                  Cantidad
+                  <input
+                    type="number"
+                    min={0}
+                    required
+                    value={invForm.quantity}
+                    onChange={(e) =>
+                      setInvForm((f) => ({ ...f, quantity: Number(e.target.value) }))
+                    }
+                    className="w-24 rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
+                  />
+                </label>
+                <label className="flex flex-col gap-1 text-xs font-medium text-gray-600">
+                  Unidad
+                  <input
+                    value={invForm.unit}
+                    onChange={(e) => setInvForm((f) => ({ ...f, unit: e.target.value }))}
+                    className="w-20 rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
+                  />
+                </label>
+                <label className="flex flex-col gap-1 text-xs font-medium text-gray-600">
+                  Notas
+                  <input
+                    value={invForm.notes}
+                    onChange={(e) => setInvForm((f) => ({ ...f, notes: e.target.value }))}
+                    className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
+                  />
+                </label>
+                <button className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 transition-colors">
+                  Agregar
+                </button>
+              </form>
+            </details>
+
+            {/* Tabla */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase">
+                    <th className="pb-2 pr-4">Organización</th>
+                    <th className="pb-2 pr-4">Item</th>
+                    <th className="pb-2 pr-4">Categoría</th>
+                    <th className="pb-2 pr-4 text-right">Cantidad</th>
+                    <th className="pb-2 pr-4">Unidad</th>
+                    <th className="pb-2 pr-4">Notas</th>
+                    <th className="pb-2 pr-4"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {invItems
+                    .filter((i) => !invFilterOrg || i.organization_id === invFilterOrg)
+                    .filter(
+                      (i) =>
+                        !invSearch || i.item_name.toLowerCase().includes(invSearch.toLowerCase()),
+                    )
+                    .map((i) => (
+                      <tr key={i.id} className="border-b border-gray-100 hover:bg-gray-50">
+                        <td className="py-2 pr-4 text-gray-500">{i.org_name}</td>
+                        <td className="py-2 pr-4 font-medium text-gray-900">{i.item_name}</td>
+                        <td className="py-2 pr-4">
+                          <span className="rounded bg-gray-100 px-1.5 py-0.5 text-[11px] font-medium text-gray-600">
+                            {i.category}
+                          </span>
+                        </td>
+                        <td className="py-2 pr-4 text-right font-semibold">{i.quantity}</td>
+                        <td className="py-2 pr-4 text-gray-500">{i.unit}</td>
+                        <td className="py-2 pr-4 text-gray-400 max-w-xs truncate">
+                          {i.notes ?? '—'}
+                        </td>
+                        <td className="py-2 pr-4">
+                          <button
+                            onClick={async () => {
+                              await apiAdmin(`/api/admin/inventory/${i.id}`, token!, {
+                                method: 'DELETE',
+                              });
+                              setInvItems(await apiAdmin('/api/admin/inventory', token!));
+                            }}
+                            className="text-xs text-red-500 hover:text-red-700 transition-colors"
+                          >
+                            Eliminar
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+              {invItems.length === 0 && (
+                <p className="text-sm text-gray-400 py-4 text-center">Sin items de inventario.</p>
+              )}
+            </div>
+          </Section>
         )}
 
         {/* ── Auditoría ────────────────────────────────────────────────── */}
