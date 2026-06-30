@@ -126,7 +126,6 @@ Análisis exhaustivo sobre las funcionalidades más disruptivas del roadmap que 
 1. Elige un item del roadmap o propone una mejora que consideres vital.
 2. Abre un **Issue** para discutir la arquitectura y el enfoque de desarrollo.
 3. Envía un **Pull Request** siguiendo las mejores prácticas especificadas en la documentación técnica del proyecto.
-4. Si eres nuevo en el proyecto, busca las tareas marcadas con la etiqueta `good first issue` para comenzar a familiarizarte con el monorrepositorio.
 
 ---
 
