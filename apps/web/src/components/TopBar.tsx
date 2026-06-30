@@ -24,14 +24,13 @@ const ROLE_COLORS: Record<string, string> = {
 export function TopBar() {
   const pathname = useLocation().pathname;
   const { online, syncing, pendingCount } = useApp();
-  const [session, setSession] = useState<{ username: string; role: string } | null>(null);
-
-  useEffect(() => {
+  const [session, setSession] = useState<{ username: string; role: string } | null>(() => {
     const u = sessionStorage.getItem('admin_user');
     const r = sessionStorage.getItem('admin_role');
-    if (u) setSession({ username: u, role: r ?? 'viewer' });
-    else setSession(null);
+    return u ? { username: u, role: r ?? 'viewer' } : null;
+  });
 
+  useEffect(() => {
     const handler = () => {
       const u2 = sessionStorage.getItem('admin_user');
       const r2 = sessionStorage.getItem('admin_role');

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { LocalReport } from '@/lib/types';
@@ -102,11 +102,6 @@ export default function OrganigramaView({
     availability: 'disponible',
     organization_id: '',
   });
-
-  useEffect(() => {
-    setOrgs(initialOrgs);
-    setVols(initialVols);
-  }, [initialOrgs, initialVols]);
 
   const refresh = async () => {
     setOrgs(await adminFetch('/api/admin/orgs', token));

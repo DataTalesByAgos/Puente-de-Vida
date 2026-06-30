@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { API_URL } from '@/lib/api';
 import OrganigramaView from '@/components/OrganigramaView';
 
@@ -103,8 +103,12 @@ const PRIO_COLORS: Record<string, string> = {
 };
 
 export default function AdminPage() {
-  const [token, setToken] = useState<string | null>(null);
-  const [session, setSession] = useState<{ username: string; role: string } | null>(null);
+  const [token, setToken] = useState<string | null>(() => sessionStorage.getItem('admin_token'));
+  const [session, setSession] = useState<{ username: string; role: string } | null>(() => {
+    const u = sessionStorage.getItem('admin_user');
+    const r = sessionStorage.getItem('admin_role');
+    return u ? { username: u, role: r ?? 'viewer' } : null;
+  });
   const [loginUser, setLoginUser] = useState('');
   const [loginPass, setLoginPass] = useState('');
   const [loginErr, setLoginErr] = useState('');
@@ -180,51 +184,39 @@ export default function AdminPage() {
   });
   const [expandedOrgs, setExpandedOrgs] = useState<Set<string>>(new Set());
 
-  // Restaurar sesión del sessionStorage
-  useEffect(() => {
-    const t = sessionStorage.getItem('admin_token');
-    const u = sessionStorage.getItem('admin_user');
-    const r = sessionStorage.getItem('admin_role');
-    if (t && u) {
-      setToken(t);
-      setSession({ username: u, role: r ?? 'viewer' });
-    }
-  }, []);
-
   // Cargar datos según tab y rol
-  const loadData = useCallback(async () => {
+  const roleLevel = HIERARCHY[session?.role ?? ''] ?? 0;
+  useEffect(() => {
     if (!token) return;
     setApiErr('');
-    try {
-      if (tab === 'stats') setStats(await apiAdmin('/api/admin/stats', token));
-      const roleLevel = HIERARCHY[session?.role ?? ''] ?? 0;
-      if (roleLevel >= 2) {
-        if (tab === 'users') setUsers(await apiAdmin('/api/admin/users', token));
-        if (tab === 'config') {
-          const c = (await apiAdmin('/api/admin/config', token)) as {
-            env: Record<string, string>;
-            db: Record<string, string>;
-          };
-          setConfigData(c);
-          if (c) setEditConfig(c.db);
+    const fn = async () => {
+      try {
+        if (tab === 'stats') setStats(await apiAdmin('/api/admin/stats', token));
+        if (roleLevel >= 2) {
+          if (tab === 'users') setUsers(await apiAdmin('/api/admin/users', token));
+          if (tab === 'config') {
+            const c = (await apiAdmin('/api/admin/config', token)) as {
+              env: Record<string, string>;
+              db: Record<string, string>;
+            };
+            setConfigData(c);
+            if (c) setEditConfig(c.db);
+          }
+          if (tab === 'audit') setAuditLog(await apiAdmin('/api/admin/audit', token));
         }
-        if (tab === 'audit') setAuditLog(await apiAdmin('/api/admin/audit', token));
+        if (roleLevel >= 1 && tab === 'orgs') {
+          setOrgs(await apiAdmin('/api/admin/orgs', token));
+          setVols(await apiAdmin('/api/admin/volunteers', token));
+        }
+      } catch (err) {
+        setApiErr(String(err));
+        setToken(null);
+        setSession(null);
+        sessionStorage.removeItem('admin_token');
       }
-      if (roleLevel >= 1 && tab === 'orgs') {
-        setOrgs(await apiAdmin('/api/admin/orgs', token));
-        setVols(await apiAdmin('/api/admin/volunteers', token));
-      }
-    } catch (err) {
-      setApiErr(String(err));
-      setToken(null);
-      setSession(null);
-      sessionStorage.removeItem('admin_token');
-    }
-  }, [token, tab, session?.role]);
-
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+    };
+    fn();
+  }, [token, tab, roleLevel]);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -283,7 +275,6 @@ export default function AdminPage() {
     setTimeout(() => setConfigSaved(false), 2000);
   }
 
-  const roleLevel = HIERARCHY[session?.role ?? ''] ?? 0;
   const isAdmin = roleLevel >= 2;
   const canManageOrgs = roleLevel >= 1;
   const visibleTabs = TABS.filter((t) => roleLevel >= HIERARCHY[t.minRole]);
