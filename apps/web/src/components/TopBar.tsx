@@ -10,8 +10,16 @@ const NAV = [
   { href: '/mapa', label: 'Mapa', icon: '🗺️', hint: 'Terreno' },
 ];
 
-const ROLE_LABELS: Record<string, string> = { viewer: 'Solo lectura', operator: 'Operador', admin: 'Admin' };
-const ROLE_COLORS: Record<string, string> = { viewer: 'bg-gray-100 text-gray-700', operator: 'bg-blue-100 text-blue-700', admin: 'bg-red-100 text-red-700' };
+const ROLE_LABELS: Record<string, string> = {
+  viewer: 'Solo lectura',
+  operator: 'Operador',
+  admin: 'Admin',
+};
+const ROLE_COLORS: Record<string, string> = {
+  viewer: 'bg-gray-100 text-gray-700',
+  operator: 'bg-blue-100 text-blue-700',
+  admin: 'bg-red-100 text-red-700',
+};
 
 export function TopBar() {
   const pathname = useLocation().pathname;
@@ -102,7 +110,9 @@ export function TopBar() {
           {session ? (
             <div className="flex items-center gap-1.5">
               <span className="hidden sm:inline text-muted">{session.username}</span>
-              <span className={`hidden sm:inline rounded px-1.5 py-0.5 text-[10px] font-medium ${ROLE_COLORS[session.role]}`}>
+              <span
+                className={`hidden sm:inline rounded px-1.5 py-0.5 text-[10px] font-medium ${ROLE_COLORS[session.role]}`}
+              >
                 {ROLE_LABELS[session.role]}
               </span>
               <Link

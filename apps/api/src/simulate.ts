@@ -125,7 +125,12 @@ const LOCATIONS: Location[] = [
   { text: 'el sector Petare', lat: 10.4768, lng: -66.8089, region: 'Miranda' },
   { text: 'la urbanización El Valle', lat: 10.4634, lng: -66.9171, region: 'Distrito Capital' },
   { text: 'el barrio La Vega', lat: 10.4881, lng: -66.9418, region: 'Distrito Capital' },
-  { text: 'la avenida principal de Antímano', lat: 10.4657, lng: -66.9791, region: 'Distrito Capital' },
+  {
+    text: 'la avenida principal de Antímano',
+    lat: 10.4657,
+    lng: -66.9791,
+    region: 'Distrito Capital',
+  },
   { text: 'la calle Sucre', lat: 10.5061, lng: -66.9146, region: 'Distrito Capital' },
   { text: 'el sector Catia', lat: 10.5099, lng: -66.9411, region: 'Distrito Capital' },
   { text: 'Caricuao', lat: 10.4347, lng: -66.9778, region: 'Distrito Capital' },
@@ -198,49 +203,49 @@ const LOCATIONS: Location[] = [
   // --- Mérida (Andes) ---
   { text: 'Mérida', lat: 8.5842, lng: -71.1417, region: 'Mérida' },
   { text: 'El Vigía', lat: 8.6181, lng: -71.6531, region: 'Mérida' },
-  { text: 'Tovar', lat: 8.3333, lng: -71.7500, region: 'Mérida' },
+  { text: 'Tovar', lat: 8.3333, lng: -71.75, region: 'Mérida' },
   { text: 'Ejido', lat: 8.5467, lng: -71.2406, region: 'Mérida' },
-  { text: 'Mucuchíes', lat: 8.7500, lng: -70.9167, region: 'Mérida' },
+  { text: 'Mucuchíes', lat: 8.75, lng: -70.9167, region: 'Mérida' },
   { text: 'Santa Elena de Arenales', lat: 8.8189, lng: -71.4417, region: 'Mérida' },
-  { text: 'Bailadores', lat: 8.2500, lng: -71.8167, region: 'Mérida' },
+  { text: 'Bailadores', lat: 8.25, lng: -71.8167, region: 'Mérida' },
   // --- Táchira (Andes, zona sísmica activa) ---
   { text: 'San Cristóbal', lat: 7.7683, lng: -72.2297, region: 'Táchira' },
   { text: 'Táriba', lat: 7.8189, lng: -72.2167, region: 'Táchira' },
-  { text: 'Rubio', lat: 7.7000, lng: -72.3500, region: 'Táchira' },
+  { text: 'Rubio', lat: 7.7, lng: -72.35, region: 'Táchira' },
   { text: 'La Grita', lat: 8.1372, lng: -71.9831, region: 'Táchira' },
   { text: 'Capacho', lat: 7.8167, lng: -72.3167, region: 'Táchira' },
   // --- Zulia (zona sísmica + lago) ---
   { text: 'Maracaibo', lat: 10.6317, lng: -71.6406, region: 'Zulia' },
   { text: 'Cabimas', lat: 10.3986, lng: -71.4517, region: 'Zulia' },
   { text: 'Ciudad Ojeda', lat: 10.2003, lng: -71.3075, region: 'Zulia' },
-  { text: 'Machiques', lat: 10.0667, lng: -72.5500, region: 'Zulia' },
+  { text: 'Machiques', lat: 10.0667, lng: -72.55, region: 'Zulia' },
   { text: 'Santa Bárbara del Zulia', lat: 8.9889, lng: -71.9558, region: 'Zulia' },
   // --- Sucre (zona sísmica, costa) ---
   { text: 'Cumaná', lat: 10.4564, lng: -64.1725, region: 'Sucre' },
-  { text: 'Carúpano', lat: 10.6692, lng: -63.2400, region: 'Sucre' },
-  { text: 'Güiria', lat: 10.5750, lng: -62.2981, region: 'Sucre' },
+  { text: 'Carúpano', lat: 10.6692, lng: -63.24, region: 'Sucre' },
+  { text: 'Güiria', lat: 10.575, lng: -62.2981, region: 'Sucre' },
   { text: 'Río Caribe', lat: 10.6967, lng: -63.1075, region: 'Sucre' },
   // --- Anzoátegui ---
   { text: 'Barcelona', lat: 10.1333, lng: -64.6833, region: 'Anzoátegui' },
   { text: 'Puerto La Cruz', lat: 10.2167, lng: -64.6167, region: 'Anzoátegui' },
-  { text: 'Lechería', lat: 10.2000, lng: -64.6833, region: 'Anzoátegui' },
+  { text: 'Lechería', lat: 10.2, lng: -64.6833, region: 'Anzoátegui' },
   { text: 'Anaco', lat: 9.4333, lng: -64.4667, region: 'Anzoátegui' },
-  { text: 'El Tigre', lat: 8.8833, lng: -64.2500, region: 'Anzoátegui' },
-  { text: 'Pariaguán', lat: 8.8500, lng: -64.7000, region: 'Anzoátegui' },
+  { text: 'El Tigre', lat: 8.8833, lng: -64.25, region: 'Anzoátegui' },
+  { text: 'Pariaguán', lat: 8.85, lng: -64.7, region: 'Anzoátegui' },
   // --- Monagas ---
-  { text: 'Maturín', lat: 9.7500, lng: -63.1833, region: 'Monagas' },
+  { text: 'Maturín', lat: 9.75, lng: -63.1833, region: 'Monagas' },
   { text: 'Punta de Mata', lat: 9.6833, lng: -63.6167, region: 'Monagas' },
   { text: 'Temblador', lat: 9.0167, lng: -62.6333, region: 'Monagas' },
   // --- Bolívar (sur) ---
-  { text: 'Ciudad Bolívar', lat: 8.1167, lng: -63.5500, region: 'Bolívar' },
-  { text: 'Puerto Ordaz', lat: 8.3167, lng: -62.7000, region: 'Bolívar' },
-  { text: 'Upata', lat: 8.0167, lng: -62.4000, region: 'Bolívar' },
+  { text: 'Ciudad Bolívar', lat: 8.1167, lng: -63.55, region: 'Bolívar' },
+  { text: 'Puerto Ordaz', lat: 8.3167, lng: -62.7, region: 'Bolívar' },
+  { text: 'Upata', lat: 8.0167, lng: -62.4, region: 'Bolívar' },
   { text: 'Caicara del Orinoco', lat: 7.6333, lng: -66.1667, region: 'Bolívar' },
   // --- Nueva Esparta (isla) ---
   { text: 'Porlamar', lat: 10.9589, lng: -63.8694, region: 'Nva. Esparta' },
   { text: 'La Asunción', lat: 11.0292, lng: -63.8678, region: 'Nva. Esparta' },
   { text: 'Pampatar', lat: 10.9944, lng: -63.7897, region: 'Nva. Esparta' },
-  { text: 'Juan Griego', lat: 11.0825, lng: -63.9650, region: 'Nva. Esparta' },
+  { text: 'Juan Griego', lat: 11.0825, lng: -63.965, region: 'Nva. Esparta' },
   { text: 'El Yaque', lat: 10.9025, lng: -63.9344, region: 'Nva. Esparta' },
 ];
 
@@ -360,8 +365,8 @@ const TEMPLATES: Template[] = [
 // Esto evita el problema anterior donde el ~18% eran copias textuales del
 // mismo mensaje con un prefijo, y produce una distribución mucho más realista.
 
-const MODE_NUEVO = 0.70;
-const MODE_CASCADA = 0.90; // 0.70 + 0.20
+const MODE_NUEVO = 0.7;
+const MODE_CASCADA = 0.9; // 0.70 + 0.20
 
 const CASCADA_PREFIXES = [
   'También en la zona, ',
@@ -383,9 +388,9 @@ const TESTIGO_PREFIXES = [
 interface SimEvent {
   type: string;
   loc: Location;
-  tplIdx: number;       // índice del template original
-  textIdx: number;      // índice del texto usado dentro del template
-  n: number;            // número de personas afectadas
+  tplIdx: number; // índice del template original
+  textIdx: number; // índice del texto usado dentro del template
+  n: number; // número de personas afectadas
 }
 
 const WEIGHT_TOTAL = TEMPLATES.reduce((s, t) => s + t.weight, 0);
@@ -458,13 +463,12 @@ function generateMessages(
       const tpl = TEMPLATES[base.tplIdx];
       // Intentar un texto distinto del mismo template
       const altTexts = tpl.texts.filter((_, idx) => idx !== base.textIdx);
-      const t = altTexts.length > 0
-        ? pick(altTexts, rng)
-        : pick(tpl.texts, rng);
+      const t = altTexts.length > 0 ? pick(altTexts, rng) : pick(tpl.texts, rng);
       const text = `${pick(CASCADA_PREFIXES, rng)}${t
         .replace('{loc}', newLoc.text)
         .replace('{n}', String(randInt(2, 30, rng)))
-        .charAt(0).toLowerCase()}${t.slice(1)}`;
+        .charAt(0)
+        .toLowerCase()}${t.slice(1)}`;
 
       active.push({
         type: base.type,
@@ -488,7 +492,8 @@ function generateMessages(
       const text = `${pick(TESTIGO_PREFIXES, rng)}${pick(tpl.texts, rng)
         .replace('{loc}', base.loc.text)
         .replace('{n}', String(randInt(2, 30, rng)))
-        .charAt(0).toLowerCase()}${pick(tpl.texts, rng).slice(1)}`;
+        .charAt(0)
+        .toLowerCase()}${pick(tpl.texts, rng).slice(1)}`;
 
       out.push({
         text,
@@ -720,7 +725,13 @@ async function main(): Promise<void> {
       const res = await fetch(`${args.url}/api/whatsapp/simulate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: msg.text, phone: msg.phone, name: msg.name, lat: msg.lat, lng: msg.lng }),
+        body: JSON.stringify({
+          text: msg.text,
+          phone: msg.phone,
+          name: msg.name,
+          lat: msg.lat,
+          lng: msg.lng,
+        }),
       });
       const ms = Date.now() - t0;
       m.latencies.push(ms);

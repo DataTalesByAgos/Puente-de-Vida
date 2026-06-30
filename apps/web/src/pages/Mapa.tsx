@@ -27,7 +27,11 @@ export default function MapaPage() {
       </div>
 
       <div className="h-[65vh] overflow-hidden rounded-xl border border-line shadow-card">
-        <Suspense fallback={<div className="flex h-full items-center justify-center text-muted">Cargando mapa…</div>}>
+        <Suspense
+          fallback={
+            <div className="flex h-full items-center justify-center text-muted">Cargando mapa…</div>
+          }
+        >
           <MapView reports={points} />
         </Suspense>
       </div>

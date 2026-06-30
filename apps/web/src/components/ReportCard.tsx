@@ -61,7 +61,9 @@ export function ReportCard({
           <div>
             <p className="font-display text-sm font-bold">
               {TYPE_LABELS[report.incidentType]}
-              <span className={`ml-1.5 inline-block rounded px-1.5 py-0.5 text-[0.6rem] font-semibold uppercase leading-none ${completenessBg(completenessLevel(report))}`}>
+              <span
+                className={`ml-1.5 inline-block rounded px-1.5 py-0.5 text-[0.6rem] font-semibold uppercase leading-none ${completenessBg(completenessLevel(report))}`}
+              >
                 {COMPLETENESS_SHORT[completenessLevel(report)]}
               </span>
             </p>

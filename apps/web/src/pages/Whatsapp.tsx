@@ -19,7 +19,9 @@ function waText(text: string) {
     <span key={i} className="block">
       {line.split('*').map((part, j) =>
         j % 2 === 1 ? (
-          <strong key={j} className="font-semibold">{part}</strong>
+          <strong key={j} className="font-semibold">
+            {part}
+          </strong>
         ) : (
           <span key={j}>{part}</span>
         ),
@@ -44,8 +46,13 @@ export default function WhatsappPage() {
 
   useEffect(() => {
     let alive = true;
-    api.whatsappStatus().then((s) => alive && setStatus(s)).catch(() => {});
-    return () => { alive = false; };
+    api
+      .whatsappStatus()
+      .then((s) => alive && setStatus(s))
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -65,12 +72,15 @@ export default function WhatsappPage() {
             <div>
               <h1 className="font-display text-lg font-bold">Canales de entrada</h1>
               <p className="mt-0.5 max-w-2xl text-sm text-muted">
-                Mensajes de ciudadanos entrando por WhatsApp, SMS y llamadas. Los reportes se procesan y clasifican automáticamente al llegar.
+                Mensajes de ciudadanos entrando por WhatsApp, SMS y llamadas. Los reportes se
+                procesan y clasifican automáticamente al llegar.
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <span className="chip border border-line bg-paper text-muted">{messages.length} mensajes</span>
+            <span className="chip border border-line bg-paper text-muted">
+              {messages.length} mensajes
+            </span>
             <span
               className={`chip ${
                 connected
@@ -96,7 +106,10 @@ export default function WhatsappPage() {
               </span>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold">Puente de Vida</p>
-                <p className="text-[0.65rem] text-white/70">bot de coordinación · {messages.length > 0 ? 'conversación activa' : 'esperando mensajes'}</p>
+                <p className="text-[0.65rem] text-white/70">
+                  bot de coordinación ·{' '}
+                  {messages.length > 0 ? 'conversación activa' : 'esperando mensajes'}
+                </p>
               </div>
             </div>
 
@@ -107,7 +120,8 @@ export default function WhatsappPage() {
             >
               {messages.length === 0 && (
                 <div className="m-auto max-w-[260px] rounded-xl bg-surface px-3 py-2 text-center text-xs text-muted shadow-card">
-                  No hay mensajes todavía. Los mensajes aparecen acá automáticamente a medida que llegan.
+                  No hay mensajes todavía. Los mensajes aparecen acá automáticamente a medida que
+                  llegan.
                 </div>
               )}
 
@@ -126,7 +140,9 @@ export default function WhatsappPage() {
                   {/* Respuesta del bot */}
                   <div className="mr-auto max-w-[88%] rounded-2xl rounded-bl-sm bg-surface px-3 py-2 text-sm text-ink shadow-sm">
                     {waText(buildCitizenReply(r))}
-                    <span className="mt-1 block text-right text-[0.6rem] text-muted">asistente · {timeShort(r.createdAt)}</span>
+                    <span className="mt-1 block text-right text-[0.6rem] text-muted">
+                      asistente · {timeShort(r.createdAt)}
+                    </span>
                   </div>
                 </div>
               ))}
@@ -146,9 +162,7 @@ export default function WhatsappPage() {
               <span className="text-lg">📋</span>
               <div>
                 <h2 className="font-display text-sm font-bold">Bandeja de coordinación</h2>
-                <p className="text-xs text-muted">
-                  Reportes clasificados entrando en vivo.
-                </p>
+                <p className="text-xs text-muted">Reportes clasificados entrando en vivo.</p>
               </div>
             </div>
           </div>
@@ -171,8 +185,10 @@ export default function WhatsappPage() {
 
           <p className="card-flat text-xs text-muted">
             En el{' '}
-            <Link to="/" className="text-coralInk underline">Panel del coordinador</Link>
-            {' '}los reportes se ordenan por urgencia (críticos primero).
+            <Link to="/" className="text-coralInk underline">
+              Panel del coordinador
+            </Link>{' '}
+            los reportes se ordenan por urgencia (críticos primero).
           </p>
         </section>
       </div>
@@ -207,7 +223,9 @@ function CoordinatorRow({ r }: { r: LocalReport }) {
           {r.recommendedTeam && <span>🚩 {r.recommendedTeam}</span>}
           {r.locationText && <span>📍 {r.locationText}</span>}
           {r.reporterName && <span>👤 {r.reporterName}</span>}
-          <span className="chip border border-line bg-paper">🤖 {Math.round(r.confidence * 100)}%</span>
+          <span className="chip border border-line bg-paper">
+            🤖 {Math.round(r.confidence * 100)}%
+          </span>
           {r.synced === 0 && (
             <span className="chip border border-amber/50 bg-amber/20 text-amberInk">sin subir</span>
           )}
@@ -216,4 +234,3 @@ function CoordinatorRow({ r }: { r: LocalReport }) {
     </article>
   );
 }
-

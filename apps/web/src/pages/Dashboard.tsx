@@ -42,7 +42,9 @@ function ReportModal({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 p-4 backdrop-blur-sm"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       <motion.div
         ref={modalRef}
@@ -67,8 +69,12 @@ function ReportModal({
           <div className="min-w-0 flex-1">
             <p className="font-display text-lg font-bold">{TYPE_LABELS[report.incidentType]}</p>
             <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted">
-              <span className={`chip ${PRIORITY_CHIP[report.priority]}`}>{PRIORITY_LABELS[report.priority]}</span>
-              <span className={`chip ${channel.chip}`}>{channel.icon} {channel.label}</span>
+              <span className={`chip ${PRIORITY_CHIP[report.priority]}`}>
+                {PRIORITY_LABELS[report.priority]}
+              </span>
+              <span className={`chip ${channel.chip}`}>
+                {channel.icon} {channel.label}
+              </span>
               <span>· {timeAgo(report.createdAt)}</span>
             </div>
           </div>
@@ -226,8 +232,6 @@ export default function DashboardPage() {
         <Kpi label="Desde WhatsApp" value={stats.fromWhatsapp} tone="sky" />
       </section>
 
-
-
       {/* Por tipo */}
       <section className="card">
         <h2 className="mb-3 font-display text-sm font-bold">Por tipo de incidente</h2>
@@ -262,7 +266,9 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between">
           <h2 className="font-display text-sm font-bold">
             Incidentes activos{' '}
-            <span className="text-muted">({compTab === 'todos' ? feed.length : `${filteredFeed.length} / ${feed.length}`})</span>
+            <span className="text-muted">
+              ({compTab === 'todos' ? feed.length : `${filteredFeed.length} / ${feed.length}`})
+            </span>
           </h2>
           <span className="text-xs text-muted">ordenados por urgencia</span>
         </div>
@@ -270,7 +276,10 @@ export default function DashboardPage() {
         {/* Mini-tabs por completitud */}
         <div className="flex gap-1.5">
           {(['todos', 'completo', 'semi', 'incompleto'] as const).map((tab) => {
-            const count = tab === 'todos' ? feed.length : feed.filter((r) => completenessLevel(r) === tab).length;
+            const count =
+              tab === 'todos'
+                ? feed.length
+                : feed.filter((r) => completenessLevel(r) === tab).length;
             const active = compTab === tab;
             return (
               <button
@@ -293,7 +302,12 @@ export default function DashboardPage() {
         )}
         <AnimatePresence mode="popLayout">
           {filteredFeed.map((r) => (
-            <ReportCard key={r.key} report={r} onAdvance={advanceStatus} onSelect={setSelectedReport} />
+            <ReportCard
+              key={r.key}
+              report={r}
+              onAdvance={advanceStatus}
+              onSelect={setSelectedReport}
+            />
           ))}
         </AnimatePresence>
       </section>
@@ -310,7 +324,13 @@ export default function DashboardPage() {
 
       {/* Modal de detalle */}
       <AnimatePresence>
-        {selectedReport && <ReportModal report={selectedReport} onClose={() => setSelectedReport(null)} modalRef={modalRef} />}
+        {selectedReport && (
+          <ReportModal
+            report={selectedReport}
+            onClose={() => setSelectedReport(null)}
+            modalRef={modalRef}
+          />
+        )}
       </AnimatePresence>
     </div>
   );

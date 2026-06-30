@@ -34,7 +34,12 @@ export default defineConfig({
         theme_color: '#ef3b56',
         orientation: 'portrait',
         icons: [
-          { src: '/brand/v-mark.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any maskable' },
+          {
+            src: '/brand/v-mark.svg',
+            sizes: 'any',
+            type: 'image/svg+xml',
+            purpose: 'any maskable',
+          },
         ],
       },
     }),

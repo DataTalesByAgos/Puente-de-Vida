@@ -22,7 +22,7 @@ const GEO_LOOKUP: { patterns: RegExp[]; lat: number; lng: number }[] = [
   { patterns: [/junquito/i], lat: 10.4627, lng: -67.0803 },
   { patterns: [/baruta/i], lat: 10.4335, lng: -66.8683 },
   { patterns: [/chacao/i], lat: 10.4965, lng: -66.8507 },
-  { patterns: [/altamira/i], lat: 10.5000, lng: -66.8408 },
+  { patterns: [/altamira/i], lat: 10.5, lng: -66.8408 },
   { patterns: [/los chorros/i], lat: 10.5006, lng: -66.8331 },
   { patterns: [/la candelaria/i], lat: 10.5064, lng: -66.9017 },
   { patterns: [/el paraiso|el paraíso/i], lat: 10.4886, lng: -66.9225 },
@@ -79,35 +79,35 @@ const GEO_LOOKUP: { patterns: RegExp[]; lat: number; lng: number }[] = [
   // --- Mérida ---
   { patterns: [/merida|mérida/i], lat: 8.5842, lng: -71.1417 },
   { patterns: [/el vigia|el vigía/i], lat: 8.6181, lng: -71.6531 },
-  { patterns: [/tovar/i], lat: 8.3333, lng: -71.7500 },
+  { patterns: [/tovar/i], lat: 8.3333, lng: -71.75 },
   { patterns: [/ejido/i], lat: 8.5467, lng: -71.2406 },
   // --- Táchira ---
   { patterns: [/san cristobal|san cristóbal/i], lat: 7.7683, lng: -72.2297 },
   { patterns: [/tariba|táriba/i], lat: 7.8189, lng: -72.2167 },
-  { patterns: [/rubio/i], lat: 7.7000, lng: -72.3500 },
+  { patterns: [/rubio/i], lat: 7.7, lng: -72.35 },
   { patterns: [/la grita/i], lat: 8.1372, lng: -71.9831 },
   // --- Zulia ---
   { patterns: [/maracaibo/i], lat: 10.6317, lng: -71.6406 },
   { patterns: [/cabimas/i], lat: 10.3986, lng: -71.4517 },
   { patterns: [/ciudad ojeda/i], lat: 10.2003, lng: -71.3075 },
-  { patterns: [/machiques/i], lat: 10.0667, lng: -72.5500 },
+  { patterns: [/machiques/i], lat: 10.0667, lng: -72.55 },
   // --- Sucre ---
   { patterns: [/cumana|cumaná/i], lat: 10.4564, lng: -64.1725 },
-  { patterns: [/carupano|carúpano/i], lat: 10.6692, lng: -63.2400 },
+  { patterns: [/carupano|carúpano/i], lat: 10.6692, lng: -63.24 },
   // --- Anzoátegui ---
   { patterns: [/barcelona/i], lat: 10.1333, lng: -64.6833 },
   { patterns: [/puerto la cruz/i], lat: 10.2167, lng: -64.6167 },
-  { patterns: [/lecheria|lechería/i], lat: 10.2000, lng: -64.6833 },
+  { patterns: [/lecheria|lechería/i], lat: 10.2, lng: -64.6833 },
   // --- Monagas ---
-  { patterns: [/maturin|maturín/i], lat: 9.7500, lng: -63.1833 },
+  { patterns: [/maturin|maturín/i], lat: 9.75, lng: -63.1833 },
   // --- Bolívar ---
-  { patterns: [/ciudad bolivar|ciudad bolívar/i], lat: 8.1167, lng: -63.5500 },
-  { patterns: [/puerto ordaz/i], lat: 8.3167, lng: -62.7000 },
+  { patterns: [/ciudad bolivar|ciudad bolívar/i], lat: 8.1167, lng: -63.55 },
+  { patterns: [/puerto ordaz/i], lat: 8.3167, lng: -62.7 },
   // --- Nueva Esparta ---
   { patterns: [/porlamar/i], lat: 10.9589, lng: -63.8694 },
   { patterns: [/la asuncion|la asunción/i], lat: 11.0292, lng: -63.8678 },
   { patterns: [/pampatar/i], lat: 10.9944, lng: -63.7897 },
-  { patterns: [/juan griego/i], lat: 11.0825, lng: -63.9650 },
+  { patterns: [/juan griego/i], lat: 11.0825, lng: -63.965 },
 ];
 
 function geoLookup(text: string): { lat: number | null; lng: number | null } {
@@ -164,10 +164,10 @@ async function recalculateGroupScores(leaderId: string): Promise<void> {
   const diversityMultiplier = 1.0 + (N - 1) * 0.5;
   const groupScore = sumPoints * diversityMultiplier;
 
-  await query(
-    `UPDATE reports SET group_score = $1 WHERE id = $2 OR duplicate_of = $2`,
-    [groupScore, leaderId],
-  );
+  await query(`UPDATE reports SET group_score = $1 WHERE id = $2 OR duplicate_of = $2`, [
+    groupScore,
+    leaderId,
+  ]);
 }
 
 /**
@@ -250,7 +250,7 @@ export async function ingestReport(input: IngestInput): Promise<Report> {
       cls.peopleAffected,
       cls.confidence,
       cls.recommendedTeam,
-      (input.reporterName ?? input.source === 'pwa') ? (input.reporterName || 'Anónimo') : null,
+      (input.reporterName ?? input.source === 'pwa') ? input.reporterName || 'Anónimo' : null,
       input.reporterPhone ?? null,
       input.photoUrl ?? null,
       cls.engine,

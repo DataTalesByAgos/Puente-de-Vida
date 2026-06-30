@@ -131,7 +131,7 @@ export function findGroupForReport(
     }
 
     if (isSameZone) {
-      const geoBoost = distance < 150 ? 0.5 : (distance < 400 ? 0.3 : 0.1);
+      const geoBoost = distance < 150 ? 0.5 : distance < 400 ? 0.3 : 0.1;
       const score = textSim + geoBoost;
       if (score > maxScore) {
         maxScore = score;
@@ -144,7 +144,7 @@ export function findGroupForReport(
   if (bestId && bestCandidate) {
     const textSim = jaccard(tokens, tokenize(bestCandidate.raw_text));
     const isSameType = report.incident_type === bestCandidate.incident_type;
-    const relationType = (isSameType && textSim >= 0.15) ? 'mismo_suceso' : 'en_cadena';
+    const relationType = isSameType && textSim >= 0.15 ? 'mismo_suceso' : 'en_cadena';
 
     return {
       parentGroupId: bestId,

@@ -15,11 +15,15 @@ const ORG_COORDS: Record<string, [number, number]> = {
   'Los Teques': [10.3422, -67.0392],
   'La Guaira': [10.6006, -66.9331],
   'El Ávila': [10.5417, -66.8775],
-  Miranda: [10.3000, -66.8000],
+  Miranda: [10.3, -66.8],
   Nacional: [10.4806, -66.9036],
 };
 
-function orgCoords(name: string, location: string | null, desc: string | null): [number, number] | null {
+function orgCoords(
+  name: string,
+  location: string | null,
+  desc: string | null,
+): [number, number] | null {
   const text = `${name} ${location ?? ''} ${desc ?? ''}`;
   for (const [key, coords] of Object.entries(ORG_COORDS)) {
     if (text.includes(key)) return coords;
@@ -35,13 +39,38 @@ const CAT_CONFIG: Record<string, { icon: string; label: string; color: string }>
   religioso: { icon: '⛪', label: 'Religioso', color: 'from-rose-500 to-rose-600' },
 };
 
-type Org = { id: string; name: string; category: string; description: string | null; contact_name: string | null; contact_phone: string | null; location: string | null; parent_id: string | null };
-type Vol = { id: string; name: string; phone: string | null; role: string; profession: string | null; skills: string[]; zone: string | null; availability: string; organization_id: string | null };
+type Org = {
+  id: string;
+  name: string;
+  category: string;
+  description: string | null;
+  contact_name: string | null;
+  contact_phone: string | null;
+  location: string | null;
+  parent_id: string | null;
+};
+type Vol = {
+  id: string;
+  name: string;
+  phone: string | null;
+  role: string;
+  profession: string | null;
+  skills: string[];
+  zone: string | null;
+  availability: string;
+  organization_id: string | null;
+};
 
 export default function OrganigramaView({
-  orgs: initialOrgs, vols: initialVols, token, adminFetch, roleLevel,
+  orgs: initialOrgs,
+  vols: initialVols,
+  token,
+  adminFetch,
+  roleLevel,
 }: {
-  orgs: Org[]; vols: Vol[]; token: string;
+  orgs: Org[];
+  vols: Vol[];
+  token: string;
   adminFetch: (path: string, token: string, opts?: Record<string, unknown>) => Promise<any>;
   roleLevel: number;
 }) {
@@ -53,11 +82,31 @@ export default function OrganigramaView({
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
 
   // Org form state
-  const [orgForm, setOrgForm] = useState({ name: '', category: 'comunitario', description: '', contact_name: '', contact_phone: '', location: '', parent_id: '' });
+  const [orgForm, setOrgForm] = useState({
+    name: '',
+    category: 'comunitario',
+    description: '',
+    contact_name: '',
+    contact_phone: '',
+    location: '',
+    parent_id: '',
+  });
   // Vol form state
-  const [volForm, setVolForm] = useState({ name: '', phone: '', role: 'general', profession: '', skills: '', zone: '', availability: 'disponible', organization_id: '' });
+  const [volForm, setVolForm] = useState({
+    name: '',
+    phone: '',
+    role: 'general',
+    profession: '',
+    skills: '',
+    zone: '',
+    availability: 'disponible',
+    organization_id: '',
+  });
 
-  useEffect(() => { setOrgs(initialOrgs); setVols(initialVols); }, [initialOrgs, initialVols]);
+  useEffect(() => {
+    setOrgs(initialOrgs);
+    setVols(initialVols);
+  }, [initialOrgs, initialVols]);
 
   const refresh = async () => {
     setOrgs(await adminFetch('/api/admin/orgs', token));
@@ -69,7 +118,9 @@ export default function OrganigramaView({
     if (activeCategory !== 'todas') list = list.filter((o) => o.category === activeCategory);
     if (search.trim()) {
       const q = search.toLowerCase();
-      list = list.filter((o) => o.name.toLowerCase().includes(q) || o.contact_name?.toLowerCase().includes(q));
+      list = list.filter(
+        (o) => o.name.toLowerCase().includes(q) || o.contact_name?.toLowerCase().includes(q),
+      );
     }
     return list;
   }, [orgs, activeCategory, search]);
@@ -91,12 +142,18 @@ export default function OrganigramaView({
     return counts;
   }, [orgs]);
 
-  const activeContacts = useMemo(() => vols.filter((v) => v.availability === 'disponible').length, [vols]);
+  const activeContacts = useMemo(
+    () => vols.filter((v) => v.availability === 'disponible').length,
+    [vols],
+  );
 
   // Map points
   const mapPoints = useMemo(() => {
     return orgs
-      .map((o) => ({ ...o, coords: orgCoords(o.name, o.location ?? o.description ?? '', o.description) }))
+      .map((o) => ({
+        ...o,
+        coords: orgCoords(o.name, o.location ?? o.description ?? '', o.description),
+      }))
       .filter((o): o is Org & { coords: [number, number] } => o.coords !== null);
   }, [orgs]);
 
@@ -122,7 +179,9 @@ export default function OrganigramaView({
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="font-display text-xl font-bold text-ink">Organizaciones</h1>
-          <p className="text-sm text-muted">Directorio de organizaciones y contactos estratégicos</p>
+          <p className="text-sm text-muted">
+            Directorio de organizaciones y contactos estratégicos
+          </p>
         </div>
         <button
           onClick={() => setModalOpen('org')}
@@ -135,7 +194,9 @@ export default function OrganigramaView({
       {/* Search + filters */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-0">
-          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted">🔍</span>
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted">
+            🔍
+          </span>
           <input
             className="input h-10 w-full rounded-xl pl-9"
             placeholder="Buscar organización o contacto…"
@@ -147,7 +208,10 @@ export default function OrganigramaView({
 
       {/* Category tabs */}
       <div className="flex flex-wrap gap-2">
-        {[{ id: 'todas', icon: '📋', label: 'Todas' }, ...sortedCategories.map((c) => ({ id: c, ...CAT_CONFIG[c] }))].map((cat) => (
+        {[
+          { id: 'todas', icon: '📋', label: 'Todas' },
+          ...sortedCategories.map((c) => ({ id: c, ...CAT_CONFIG[c] })),
+        ].map((cat) => (
           <button
             key={cat.id}
             onClick={() => setActiveCategory(cat.id)}
@@ -159,9 +223,11 @@ export default function OrganigramaView({
           >
             <span>{cat.icon}</span>
             <span>{cat.label}</span>
-            <span className={`ml-1 rounded-full px-2 py-0.5 text-[11px] tabular-nums ${
-              activeCategory === cat.id ? 'bg-white/20 text-white' : 'bg-paper text-muted'
-            }`}>
+            <span
+              className={`ml-1 rounded-full px-2 py-0.5 text-[11px] tabular-nums ${
+                activeCategory === cat.id ? 'bg-white/20 text-white' : 'bg-paper text-muted'
+              }`}
+            >
               {categoryCounts[cat.id] ?? 0}
             </span>
           </button>
@@ -179,7 +245,9 @@ export default function OrganigramaView({
               const config = CAT_CONFIG[cat];
               // Get volunteers for this category's orgs
               const catOrgIds = new Set(items.map((o) => o.id));
-              const catVols = vols.filter((v) => v.organization_id && catOrgIds.has(v.organization_id));
+              const catVols = vols.filter(
+                (v) => v.organization_id && catOrgIds.has(v.organization_id),
+              );
 
               return (
                 <section key={cat}>
@@ -187,21 +255,32 @@ export default function OrganigramaView({
                     <div className="flex items-center gap-2">
                       <span className="text-lg">{config.icon}</span>
                       <h2 className="font-display text-sm font-bold text-ink">{config.label}</h2>
-                      <span className="rounded-full bg-paper px-2 py-0.5 text-[11px] text-muted border border-line">{items.length} orgs</span>
-                      {catVols.length > 0 && <span className="text-[11px] text-muted">· {catVols.length} voluntarios</span>}
+                      <span className="rounded-full bg-paper px-2 py-0.5 text-[11px] text-muted border border-line">
+                        {items.length} orgs
+                      </span>
+                      {catVols.length > 0 && (
+                        <span className="text-[11px] text-muted">
+                          · {catVols.length} voluntarios
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     {items.map((org) => {
                       const members = vols.filter((v) => v.organization_id === org.id);
                       return (
-                        <div key={org.id} className="relative rounded-xl border border-line bg-surface p-4 shadow-card transition hover:shadow-md">
+                        <div
+                          key={org.id}
+                          className="relative rounded-xl border border-line bg-surface p-4 shadow-card transition hover:shadow-md"
+                        >
                           <div className="flex items-start gap-3">
                             <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-paper text-xl">
                               {config.icon}
                             </span>
                             <div className="min-w-0 flex-1">
-                              <h3 className="font-display text-sm font-bold text-ink truncate">{org.name}</h3>
+                              <h3 className="font-display text-sm font-bold text-ink truncate">
+                                {org.name}
+                              </h3>
                               {org.contact_name && (
                                 <p className="mt-1 flex items-center gap-1.5 text-xs text-muted">
                                   <span>👤</span> {org.contact_name}
@@ -218,17 +297,24 @@ export default function OrganigramaView({
                                 </p>
                               )}
                               {org.description && (
-                                <p className="mt-1 text-[11px] text-muted/70 line-clamp-1">{org.description}</p>
+                                <p className="mt-1 text-[11px] text-muted/70 line-clamp-1">
+                                  {org.description}
+                                </p>
                               )}
                               {members.length > 0 && (
                                 <div className="mt-2 flex flex-wrap gap-1">
                                   {members.slice(0, 3).map((v) => (
-                                    <span key={v.id} className="rounded-full bg-paper px-2 py-0.5 text-[10px] text-muted border border-line truncate max-w-28">
+                                    <span
+                                      key={v.id}
+                                      className="rounded-full bg-paper px-2 py-0.5 text-[10px] text-muted border border-line truncate max-w-28"
+                                    >
                                       {v.name}
                                     </span>
                                   ))}
                                   {members.length > 3 && (
-                                    <span className="text-[10px] text-muted">+{members.length - 3}</span>
+                                    <span className="text-[10px] text-muted">
+                                      +{members.length - 3}
+                                    </span>
                                   )}
                                 </div>
                               )}
@@ -244,15 +330,34 @@ export default function OrganigramaView({
                               {menuOpen === org.id && (
                                 <div className="absolute right-0 top-full z-20 mt-1 min-w-36 rounded-xl border border-line bg-surface py-1 shadow-card">
                                   <button
-                                    onClick={() => { setMenuOpen(null); setOrgForm({ name: org.name, category: org.category, description: org.description ?? '', contact_name: org.contact_name ?? '', contact_phone: org.contact_phone ?? '', location: org.location ?? '', parent_id: org.parent_id ?? '' }); setModalOpen('org'); }}
+                                    onClick={() => {
+                                      setMenuOpen(null);
+                                      setOrgForm({
+                                        name: org.name,
+                                        category: org.category,
+                                        description: org.description ?? '',
+                                        contact_name: org.contact_name ?? '',
+                                        contact_phone: org.contact_phone ?? '',
+                                        location: org.location ?? '',
+                                        parent_id: org.parent_id ?? '',
+                                      });
+                                      setModalOpen('org');
+                                    }}
                                     className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-ink hover:bg-paper transition"
-                                  >✏️ Editar</button>
+                                  >
+                                    ✏️ Editar
+                                  </button>
                                   <hr className="my-1 border-line" />
                                   {roleLevel >= 2 && (
                                     <button
-                                      onClick={() => { setMenuOpen(null); deleteOrg(org.id, org.name); }}
+                                      onClick={() => {
+                                        setMenuOpen(null);
+                                        deleteOrg(org.id, org.name);
+                                      }}
                                       className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-coralInk hover:bg-paper transition"
-                                    >🗑️ Eliminar</button>
+                                    >
+                                      🗑️ Eliminar
+                                    </button>
                                   )}
                                 </div>
                               )}
@@ -269,38 +374,67 @@ export default function OrganigramaView({
           {(() => {
             const freeVols = vols.filter((v) => !v.organization_id);
             const freeFiltered = search.trim()
-              ? freeVols.filter((v) => v.name.toLowerCase().includes(search.toLowerCase()) || v.zone?.toLowerCase().includes(search.toLowerCase()))
+              ? freeVols.filter(
+                  (v) =>
+                    v.name.toLowerCase().includes(search.toLowerCase()) ||
+                    v.zone?.toLowerCase().includes(search.toLowerCase()),
+                )
               : freeVols;
             if (freeFiltered.length === 0 && activeCategory !== 'todas') return null;
             return (
               <section>
                 <div className="mb-3 flex items-center gap-2">
                   <span className="text-lg">🆓</span>
-                  <h2 className="font-display text-sm font-bold text-ink">Voluntarios independientes</h2>
-                  <span className="rounded-full bg-paper px-2 py-0.5 text-[11px] text-muted border border-line">{freeFiltered.length} disponibles</span>
+                  <h2 className="font-display text-sm font-bold text-ink">
+                    Voluntarios independientes
+                  </h2>
+                  <span className="rounded-full bg-paper px-2 py-0.5 text-[11px] text-muted border border-line">
+                    {freeFiltered.length} disponibles
+                  </span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {freeFiltered.map((v) => (
-                    <div key={v.id} className="relative group rounded-xl border border-line bg-surface px-3 py-2.5 shadow-card transition hover:shadow-md">
+                    <div
+                      key={v.id}
+                      className="relative group rounded-xl border border-line bg-surface px-3 py-2.5 shadow-card transition hover:shadow-md"
+                    >
                       <div className="flex items-center gap-2.5">
                         <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-coral/10 text-[11px] font-bold text-coralInk">
-                          {v.name.split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase()}
+                          {v.name
+                            .split(/\s+/)
+                            .slice(0, 2)
+                            .map((w) => w[0])
+                            .join('')
+                            .toUpperCase()}
                         </span>
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-ink truncate">{v.name}</p>
                           <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
-                            {v.profession && <span className="text-[10px] text-muted">{v.profession}</span>}
+                            {v.profession && (
+                              <span className="text-[10px] text-muted">{v.profession}</span>
+                            )}
                             {v.zone && <span className="text-[10px] text-muted">📍{v.zone}</span>}
-                            <span className={`text-[10px] font-medium ${v.availability === 'disponible' ? 'text-wa' : 'text-amber'}`}>
+                            <span
+                              className={`text-[10px] font-medium ${v.availability === 'disponible' ? 'text-wa' : 'text-amber'}`}
+                            >
                               {v.availability === 'disponible' ? '● disponible' : '● ocupado'}
                             </span>
                           </div>
                           {v.skills?.length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-1">
                               {v.skills.slice(0, 2).map((s) => (
-                                <span key={s} className="rounded-full bg-paper px-1.5 py-0.5 text-[9px] text-muted border border-line">{s}</span>
+                                <span
+                                  key={s}
+                                  className="rounded-full bg-paper px-1.5 py-0.5 text-[9px] text-muted border border-line"
+                                >
+                                  {s}
+                                </span>
                               ))}
-                              {v.skills.length > 2 && <span className="text-[9px] text-muted">+{v.skills.length - 2}</span>}
+                              {v.skills.length > 2 && (
+                                <span className="text-[9px] text-muted">
+                                  +{v.skills.length - 2}
+                                </span>
+                              )}
                             </div>
                           )}
                         </div>
@@ -310,7 +444,9 @@ export default function OrganigramaView({
                               onClick={() => deleteVol(v.id)}
                               className="grid h-7 w-7 place-items-center rounded-lg text-muted hover:text-coralInk transition"
                               title="Eliminar"
-                            >✕</button>
+                            >
+                              ✕
+                            </button>
                           </div>
                         )}
                       </div>
@@ -351,99 +487,285 @@ export default function OrganigramaView({
           <p className="text-xs text-muted mt-0.5">Total organizaciones</p>
         </div>
         <div className="rounded-xl border border-line bg-surface p-4 text-center shadow-card">
-          <p className="text-2xl font-bold tabular-nums">{activeContacts + vols.filter((v) => !v.organization_id && v.availability === 'disponible').length}</p>
+          <p className="text-2xl font-bold tabular-nums">
+            {activeContacts +
+              vols.filter((v) => !v.organization_id && v.availability === 'disponible').length}
+          </p>
           <p className="text-xs text-muted mt-0.5">Contactos activos</p>
         </div>
         <div className="rounded-xl border border-line bg-surface p-4 text-center shadow-card">
-          <p className="text-2xl font-bold tabular-nums">{new Set(orgs.map((o) => o.category)).size}</p>
+          <p className="text-2xl font-bold tabular-nums">
+            {new Set(orgs.map((o) => o.category)).size}
+          </p>
           <p className="text-xs text-muted mt-0.5">Categorías registradas</p>
         </div>
       </div>
 
       {/* Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm" onClick={() => { setModalOpen(null); setMenuOpen(null); }}>
-          <div className="w-full max-w-lg rounded-2xl border border-line bg-surface p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
+          onClick={() => {
+            setModalOpen(null);
+            setMenuOpen(null);
+          }}
+        >
+          <div
+            className="w-full max-w-lg rounded-2xl border border-line bg-surface p-6 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Modal tabs */}
             <div className="mb-5 flex gap-1 rounded-xl bg-paper p-1">
               <button
                 onClick={() => setModalOpen('org')}
                 className={`flex-1 rounded-lg py-2 text-sm font-medium transition ${modalOpen === 'org' ? 'bg-surface text-ink shadow-sm' : 'text-muted hover:text-ink'}`}
-              >🏛️ Organización</button>
+              >
+                🏛️ Organización
+              </button>
               <button
                 onClick={() => setModalOpen('vol')}
                 className={`flex-1 rounded-lg py-2 text-sm font-medium transition ${modalOpen === 'vol' ? 'bg-surface text-ink shadow-sm' : 'text-muted hover:text-ink'}`}
-              >👤 Voluntario</button>
+              >
+                👤 Voluntario
+              </button>
             </div>
 
             {modalOpen === 'org' ? (
-              <form onSubmit={async (e) => {
-                e.preventDefault();
-                const body = { ...orgForm, parent_id: orgForm.parent_id || null };
-                if (orgForm.name && orgs.find((o) => o.name === orgForm.name)) {
-                  const existing = orgs.find((o) => o.name === orgForm.name);
-                  if (existing) await adminFetch(`/api/admin/orgs/${existing.id}`, token, { method: 'PUT', body: JSON.stringify(body) });
-                } else {
-                  await adminFetch('/api/admin/orgs', token, { method: 'POST', body: JSON.stringify(body) });
-                }
-                setModalOpen(null);
-                setOrgForm({ name: '', category: 'comunitario', description: '', contact_name: '', contact_phone: '', location: '', parent_id: '' });
-                refresh();
-              }} className="space-y-3">
-                <input className="input h-10" placeholder="Nombre de la organización" value={orgForm.name} onChange={(e) => setOrgForm((p) => ({ ...p, name: e.target.value }))} required />
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  const body = { ...orgForm, parent_id: orgForm.parent_id || null };
+                  if (orgForm.name && orgs.find((o) => o.name === orgForm.name)) {
+                    const existing = orgs.find((o) => o.name === orgForm.name);
+                    if (existing)
+                      await adminFetch(`/api/admin/orgs/${existing.id}`, token, {
+                        method: 'PUT',
+                        body: JSON.stringify(body),
+                      });
+                  } else {
+                    await adminFetch('/api/admin/orgs', token, {
+                      method: 'POST',
+                      body: JSON.stringify(body),
+                    });
+                  }
+                  setModalOpen(null);
+                  setOrgForm({
+                    name: '',
+                    category: 'comunitario',
+                    description: '',
+                    contact_name: '',
+                    contact_phone: '',
+                    location: '',
+                    parent_id: '',
+                  });
+                  refresh();
+                }}
+                className="space-y-3"
+              >
+                <input
+                  className="input h-10"
+                  placeholder="Nombre de la organización"
+                  value={orgForm.name}
+                  onChange={(e) => setOrgForm((p) => ({ ...p, name: e.target.value }))}
+                  required
+                />
                 <div className="grid grid-cols-2 gap-3">
-                  <select className="input h-10" value={orgForm.category} onChange={(e) => setOrgForm((p) => ({ ...p, category: e.target.value }))}>
-                    <option value="gobierno">Gobierno</option><option value="ong">ONG</option><option value="comunitario">Comunitario</option><option value="privado">Privado</option><option value="religioso">Religioso</option>
+                  <select
+                    className="input h-10"
+                    value={orgForm.category}
+                    onChange={(e) => setOrgForm((p) => ({ ...p, category: e.target.value }))}
+                  >
+                    <option value="gobierno">Gobierno</option>
+                    <option value="ong">ONG</option>
+                    <option value="comunitario">Comunitario</option>
+                    <option value="privado">Privado</option>
+                    <option value="religioso">Religioso</option>
                   </select>
-                  <select className="input h-10" value={orgForm.parent_id} onChange={(e) => setOrgForm((p) => ({ ...p, parent_id: e.target.value }))}>
+                  <select
+                    className="input h-10"
+                    value={orgForm.parent_id}
+                    onChange={(e) => setOrgForm((p) => ({ ...p, parent_id: e.target.value }))}
+                  >
                     <option value="">— Sin dependencia —</option>
-                    {orgs.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
+                    {orgs.map((o) => (
+                      <option key={o.id} value={o.id}>
+                        {o.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
-                <input className="input h-10" placeholder="Persona de contacto" value={orgForm.contact_name} onChange={(e) => setOrgForm((p) => ({ ...p, contact_name: e.target.value }))} />
-                <input className="input h-10" placeholder="Teléfono" value={orgForm.contact_phone} onChange={(e) => setOrgForm((p) => ({ ...p, contact_phone: e.target.value }))} />
-                <input className="input h-10" placeholder="Ubicación (ciudad, estado — para el mapa)" value={orgForm.location} onChange={(e) => setOrgForm((p) => ({ ...p, location: e.target.value }))} />
-                <textarea className="input min-h-20" placeholder="Descripción (opcional)" value={orgForm.description} onChange={(e) => setOrgForm((p) => ({ ...p, description: e.target.value }))} />
+                <input
+                  className="input h-10"
+                  placeholder="Persona de contacto"
+                  value={orgForm.contact_name}
+                  onChange={(e) => setOrgForm((p) => ({ ...p, contact_name: e.target.value }))}
+                />
+                <input
+                  className="input h-10"
+                  placeholder="Teléfono"
+                  value={orgForm.contact_phone}
+                  onChange={(e) => setOrgForm((p) => ({ ...p, contact_phone: e.target.value }))}
+                />
+                <input
+                  className="input h-10"
+                  placeholder="Ubicación (ciudad, estado — para el mapa)"
+                  value={orgForm.location}
+                  onChange={(e) => setOrgForm((p) => ({ ...p, location: e.target.value }))}
+                />
+                <textarea
+                  className="input min-h-20"
+                  placeholder="Descripción (opcional)"
+                  value={orgForm.description}
+                  onChange={(e) => setOrgForm((p) => ({ ...p, description: e.target.value }))}
+                />
                 <div className="flex items-center justify-end gap-3 pt-2">
-                  <button type="button" onClick={() => { setModalOpen(null); setOrgForm({ name: '', category: 'comunitario', description: '', contact_name: '', contact_phone: '', location: '', parent_id: '' }); }} className="btn-ghost text-sm">Cancelar</button>
-                  <button type="submit" className="rounded-xl bg-coral px-5 py-2.5 text-sm font-semibold text-white shadow-card transition hover:brightness-110">Guardar</button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setModalOpen(null);
+                      setOrgForm({
+                        name: '',
+                        category: 'comunitario',
+                        description: '',
+                        contact_name: '',
+                        contact_phone: '',
+                        location: '',
+                        parent_id: '',
+                      });
+                    }}
+                    className="btn-ghost text-sm"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="rounded-xl bg-coral px-5 py-2.5 text-sm font-semibold text-white shadow-card transition hover:brightness-110"
+                  >
+                    Guardar
+                  </button>
                 </div>
               </form>
             ) : (
-              <form onSubmit={async (e) => {
-                e.preventDefault();
-                await adminFetch('/api/admin/volunteers', token, {
-                  method: 'POST',
-                  body: JSON.stringify({ ...volForm, skills: volForm.skills ? volForm.skills.split(',').map((s) => s.trim()) : [] }),
-                });
-                setModalOpen(null);
-                setVolForm({ name: '', phone: '', role: 'general', profession: '', skills: '', zone: '', availability: 'disponible', organization_id: '' });
-                refresh();
-              }} className="space-y-3">
-                <input className="input h-10" placeholder="Nombre del voluntario" value={volForm.name} onChange={(e) => setVolForm((p) => ({ ...p, name: e.target.value }))} required />
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  await adminFetch('/api/admin/volunteers', token, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                      ...volForm,
+                      skills: volForm.skills ? volForm.skills.split(',').map((s) => s.trim()) : [],
+                    }),
+                  });
+                  setModalOpen(null);
+                  setVolForm({
+                    name: '',
+                    phone: '',
+                    role: 'general',
+                    profession: '',
+                    skills: '',
+                    zone: '',
+                    availability: 'disponible',
+                    organization_id: '',
+                  });
+                  refresh();
+                }}
+                className="space-y-3"
+              >
+                <input
+                  className="input h-10"
+                  placeholder="Nombre del voluntario"
+                  value={volForm.name}
+                  onChange={(e) => setVolForm((p) => ({ ...p, name: e.target.value }))}
+                  required
+                />
                 <div className="grid grid-cols-2 gap-3">
-                  <input className="input h-10" placeholder="Teléfono" value={volForm.phone} onChange={(e) => setVolForm((p) => ({ ...p, phone: e.target.value }))} />
-                  <select className="input h-10" value={volForm.role} onChange={(e) => setVolForm((p) => ({ ...p, role: e.target.value }))}>
-                    <option value="general">General</option><option value="coordinador">Coordinador</option><option value="operador">Operador</option><option value="medico">Médico</option><option value="voluntario">Voluntario</option>
+                  <input
+                    className="input h-10"
+                    placeholder="Teléfono"
+                    value={volForm.phone}
+                    onChange={(e) => setVolForm((p) => ({ ...p, phone: e.target.value }))}
+                  />
+                  <select
+                    className="input h-10"
+                    value={volForm.role}
+                    onChange={(e) => setVolForm((p) => ({ ...p, role: e.target.value }))}
+                  >
+                    <option value="general">General</option>
+                    <option value="coordinador">Coordinador</option>
+                    <option value="operador">Operador</option>
+                    <option value="medico">Médico</option>
+                    <option value="voluntario">Voluntario</option>
                   </select>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <input className="input h-10" placeholder="Profesión" value={volForm.profession} onChange={(e) => setVolForm((p) => ({ ...p, profession: e.target.value }))} />
-                  <input className="input h-10" placeholder="Zona" value={volForm.zone} onChange={(e) => setVolForm((p) => ({ ...p, zone: e.target.value }))} />
+                  <input
+                    className="input h-10"
+                    placeholder="Profesión"
+                    value={volForm.profession}
+                    onChange={(e) => setVolForm((p) => ({ ...p, profession: e.target.value }))}
+                  />
+                  <input
+                    className="input h-10"
+                    placeholder="Zona"
+                    value={volForm.zone}
+                    onChange={(e) => setVolForm((p) => ({ ...p, zone: e.target.value }))}
+                  />
                 </div>
-                <input className="input h-10" placeholder="Skills (coma separado: rescate, primeros auxilios…)" value={volForm.skills} onChange={(e) => setVolForm((p) => ({ ...p, skills: e.target.value }))} />
+                <input
+                  className="input h-10"
+                  placeholder="Skills (coma separado: rescate, primeros auxilios…)"
+                  value={volForm.skills}
+                  onChange={(e) => setVolForm((p) => ({ ...p, skills: e.target.value }))}
+                />
                 <div className="grid grid-cols-2 gap-3">
-                  <select className="input h-10" value={volForm.organization_id} onChange={(e) => setVolForm((p) => ({ ...p, organization_id: e.target.value }))}>
+                  <select
+                    className="input h-10"
+                    value={volForm.organization_id}
+                    onChange={(e) => setVolForm((p) => ({ ...p, organization_id: e.target.value }))}
+                  >
                     <option value="">— Independiente —</option>
-                    {orgs.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
+                    {orgs.map((o) => (
+                      <option key={o.id} value={o.id}>
+                        {o.name}
+                      </option>
+                    ))}
                   </select>
-                  <select className="input h-10" value={volForm.availability} onChange={(e) => setVolForm((p) => ({ ...p, availability: e.target.value }))}>
-                    <option value="disponible">Disponible</option><option value="ocupado">Ocupado</option><option value="inactivo">Inactivo</option>
+                  <select
+                    className="input h-10"
+                    value={volForm.availability}
+                    onChange={(e) => setVolForm((p) => ({ ...p, availability: e.target.value }))}
+                  >
+                    <option value="disponible">Disponible</option>
+                    <option value="ocupado">Ocupado</option>
+                    <option value="inactivo">Inactivo</option>
                   </select>
                 </div>
                 <div className="flex items-center justify-end gap-3 pt-2">
-                  <button type="button" onClick={() => { setModalOpen(null); setVolForm({ name: '', phone: '', role: 'general', profession: '', skills: '', zone: '', availability: 'disponible', organization_id: '' }); }} className="btn-ghost text-sm">Cancelar</button>
-                  <button type="submit" className="rounded-xl bg-coral px-5 py-2.5 text-sm font-semibold text-white shadow-card transition hover:brightness-110">Guardar</button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setModalOpen(null);
+                      setVolForm({
+                        name: '',
+                        phone: '',
+                        role: 'general',
+                        profession: '',
+                        skills: '',
+                        zone: '',
+                        availability: 'disponible',
+                        organization_id: '',
+                      });
+                    }}
+                    className="btn-ghost text-sm"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="rounded-xl bg-coral px-5 py-2.5 text-sm font-semibold text-white shadow-card transition hover:brightness-110"
+                  >
+                    Guardar
+                  </button>
                 </div>
               </form>
             )}
@@ -456,7 +778,11 @@ export default function OrganigramaView({
   );
 }
 
-function OrgMap({ points }: { points: { id: string; name: string; coords: [number, number]; category: string }[] }) {
+function OrgMap({
+  points,
+}: {
+  points: { id: string; name: string; coords: [number, number]; category: string }[];
+}) {
   const mapRef = useRef<L.Map | null>(null);
   const layerRef = useRef<L.LayerGroup | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -488,8 +814,11 @@ function OrgMap({ points }: { points: { id: string; name: string; coords: [numbe
     layer.clearLayers();
 
     const CAT_COLORS: Record<string, string> = {
-      gobierno: '#3b82f6', ong: '#10b981', privado: '#8b5cf6',
-      comunitario: '#f59e0b', religioso: '#f43f5e',
+      gobierno: '#3b82f6',
+      ong: '#10b981',
+      privado: '#8b5cf6',
+      comunitario: '#f59e0b',
+      religioso: '#f43f5e',
     };
 
     for (const p of points) {

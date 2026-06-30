@@ -39,10 +39,10 @@ const TOWNS: { name: string; lat: number; lng: number }[] = [
   { name: 'La Trinidad', lat: 10.4192, lng: -66.8569 },
   { name: 'El Marqués', lat: 10.4936, lng: -66.8217 },
   { name: 'Palo Verde', lat: 10.4797, lng: -66.8203 },
-  { name: 'Boleíta', lat: 10.4850, lng: -66.8322 },
+  { name: 'Boleíta', lat: 10.485, lng: -66.8322 },
   { name: 'Los Dos Caminos', lat: 10.5019, lng: -66.8283 },
-  { name: 'Los Ruices', lat: 10.4950, lng: -66.8150 },
-  { name: 'La Urbina', lat: 10.4900, lng: -66.8050 },
+  { name: 'Los Ruices', lat: 10.495, lng: -66.815 },
+  { name: 'La Urbina', lat: 10.49, lng: -66.805 },
   { name: 'Copacabana', lat: 10.4961, lng: -66.8719 },
   // --- Miranda ---
   { name: 'Los Teques', lat: 10.3422, lng: -67.0392 },
@@ -74,7 +74,7 @@ const TOWNS: { name: string; lat: number; lng: number }[] = [
   { name: 'El Limón', lat: 10.3061, lng: -67.6331 },
   { name: 'Colonia Tovar', lat: 10.4061, lng: -67.2908 },
   { name: 'Ocumare de la Costa', lat: 10.4572, lng: -67.7708 },
-  { name: 'San Mateo', lat: 10.2100, lng: -67.4269 },
+  { name: 'San Mateo', lat: 10.21, lng: -67.4269 },
   { name: 'Palo Negro', lat: 10.1733, lng: -67.5494 },
   { name: 'Santa Rita', lat: 10.2058, lng: -67.5094 },
   // --- Carabobo ---
@@ -86,7 +86,7 @@ const TOWNS: { name: string; lat: number; lng: number }[] = [
   { name: 'Mariara', lat: 10.3006, lng: -67.8308 },
   { name: 'Los Guayos', lat: 10.1856, lng: -67.9308 },
   { name: 'Morón', lat: 10.4861, lng: -68.1994 },
-  { name: 'Tocuyito', lat: 10.1000, lng: -68.0667 },
+  { name: 'Tocuyito', lat: 10.1, lng: -68.0667 },
   // --- Lara ---
   { name: 'Barquisimeto', lat: 10.0736, lng: -69.3228 },
   { name: 'Cabudare', lat: 10.0233, lng: -69.2708 },
@@ -94,7 +94,7 @@ const TOWNS: { name: string; lat: number; lng: number }[] = [
   { name: 'El Tocuyo', lat: 9.7869, lng: -69.7919 },
   { name: 'Quíbor', lat: 9.9289, lng: -69.6158 },
   { name: 'Duaca', lat: 10.2892, lng: -69.1681 },
-  { name: 'Sarare', lat: 9.7833, lng: -69.1000 },
+  { name: 'Sarare', lat: 9.7833, lng: -69.1 },
   // --- Falcón ---
   { name: 'Coro', lat: 11.4039, lng: -69.6806 },
   { name: 'Punto Fijo', lat: 11.6997, lng: -70.1869 },
@@ -107,98 +107,98 @@ const TOWNS: { name: string; lat: number; lng: number }[] = [
   { name: 'Yaritagua', lat: 10.0819, lng: -69.1308 },
   { name: 'Chivacoa', lat: 10.1581, lng: -68.8983 },
   { name: 'Aroa', lat: 10.4397, lng: -68.8892 },
-  { name: 'Nirgua', lat: 10.1500, lng: -68.5667 },
+  { name: 'Nirgua', lat: 10.15, lng: -68.5667 },
   // --- Mérida ---
   { name: 'Mérida', lat: 8.5842, lng: -71.1417 },
   { name: 'El Vigía', lat: 8.6181, lng: -71.6531 },
-  { name: 'Tovar', lat: 8.3333, lng: -71.7500 },
+  { name: 'Tovar', lat: 8.3333, lng: -71.75 },
   { name: 'Ejido', lat: 8.5467, lng: -71.2406 },
-  { name: 'Mucuchíes', lat: 8.7500, lng: -70.9167 },
+  { name: 'Mucuchíes', lat: 8.75, lng: -70.9167 },
   { name: 'Santa Elena de Arenales', lat: 8.8189, lng: -71.4417 },
-  { name: 'Bailadores', lat: 8.2500, lng: -71.8167 },
+  { name: 'Bailadores', lat: 8.25, lng: -71.8167 },
   { name: 'Lagunillas', lat: 8.5139, lng: -71.3861 },
   { name: 'Tabay', lat: 8.6333, lng: -71.0833 },
   // --- Táchira ---
   { name: 'San Cristóbal', lat: 7.7683, lng: -72.2297 },
   { name: 'Táriba', lat: 7.8189, lng: -72.2167 },
-  { name: 'Rubio', lat: 7.7000, lng: -72.3500 },
+  { name: 'Rubio', lat: 7.7, lng: -72.35 },
   { name: 'La Grita', lat: 8.1372, lng: -71.9831 },
   { name: 'Capacho', lat: 7.8167, lng: -72.3167 },
-  { name: 'San Antonio del Táchira', lat: 7.8167, lng: -72.4500 },
-  { name: 'Colón', lat: 8.0333, lng: -72.2500 },
+  { name: 'San Antonio del Táchira', lat: 7.8167, lng: -72.45 },
+  { name: 'Colón', lat: 8.0333, lng: -72.25 },
   // --- Zulia ---
   { name: 'Maracaibo', lat: 10.6317, lng: -71.6406 },
   { name: 'Cabimas', lat: 10.3986, lng: -71.4517 },
   { name: 'Ciudad Ojeda', lat: 10.2003, lng: -71.3075 },
-  { name: 'Machiques', lat: 10.0667, lng: -72.5500 },
+  { name: 'Machiques', lat: 10.0667, lng: -72.55 },
   { name: 'Santa Bárbara del Zulia', lat: 8.9889, lng: -71.9558 },
   { name: 'La Cañada de Urdaneta', lat: 10.4344, lng: -71.6567 },
-  { name: 'San Francisco', lat: 10.5750, lng: -71.6450 },
+  { name: 'San Francisco', lat: 10.575, lng: -71.645 },
   { name: 'Villa del Rosario', lat: 10.3167, lng: -72.3167 },
-  { name: 'Bachaquero', lat: 10.0000, lng: -71.1333 },
+  { name: 'Bachaquero', lat: 10.0, lng: -71.1333 },
   // --- Sucre ---
   { name: 'Cumaná', lat: 10.4564, lng: -64.1725 },
-  { name: 'Carúpano', lat: 10.6692, lng: -63.2400 },
-  { name: 'Güiria', lat: 10.5750, lng: -62.2981 },
+  { name: 'Carúpano', lat: 10.6692, lng: -63.24 },
+  { name: 'Güiria', lat: 10.575, lng: -62.2981 },
   { name: 'Río Caribe', lat: 10.6967, lng: -63.1075 },
-  { name: 'Casanay', lat: 10.5000, lng: -63.4167 },
+  { name: 'Casanay', lat: 10.5, lng: -63.4167 },
   { name: 'Yaguaraparo', lat: 10.5833, lng: -62.8333 },
   // --- Anzoátegui ---
   { name: 'Barcelona', lat: 10.1333, lng: -64.6833 },
   { name: 'Puerto La Cruz', lat: 10.2167, lng: -64.6167 },
-  { name: 'Lechería', lat: 10.2000, lng: -64.6833 },
+  { name: 'Lechería', lat: 10.2, lng: -64.6833 },
   { name: 'Anaco', lat: 9.4333, lng: -64.4667 },
-  { name: 'El Tigre', lat: 8.8833, lng: -64.2500 },
-  { name: 'Pariaguán', lat: 8.8500, lng: -64.7000 },
-  { name: 'Cantaura', lat: 9.3000, lng: -64.3500 },
+  { name: 'El Tigre', lat: 8.8833, lng: -64.25 },
+  { name: 'Pariaguán', lat: 8.85, lng: -64.7 },
+  { name: 'Cantaura', lat: 9.3, lng: -64.35 },
   // --- Monagas ---
-  { name: 'Maturín', lat: 9.7500, lng: -63.1833 },
+  { name: 'Maturín', lat: 9.75, lng: -63.1833 },
   { name: 'Punta de Mata', lat: 9.6833, lng: -63.6167 },
   { name: 'Temblador', lat: 9.0167, lng: -62.6333 },
-  { name: 'Caripe', lat: 10.1667, lng: -63.5000 },
+  { name: 'Caripe', lat: 10.1667, lng: -63.5 },
   // --- Bolívar ---
-  { name: 'Ciudad Bolívar', lat: 8.1167, lng: -63.5500 },
-  { name: 'Puerto Ordaz', lat: 8.3167, lng: -62.7000 },
-  { name: 'Upata', lat: 8.0167, lng: -62.4000 },
+  { name: 'Ciudad Bolívar', lat: 8.1167, lng: -63.55 },
+  { name: 'Puerto Ordaz', lat: 8.3167, lng: -62.7 },
+  { name: 'Upata', lat: 8.0167, lng: -62.4 },
   { name: 'Caicara del Orinoco', lat: 7.6333, lng: -66.1667 },
-  { name: 'El Callao', lat: 7.3500, lng: -61.8167 },
-  { name: 'Ciudad Guayana', lat: 8.3500, lng: -62.6500 },
+  { name: 'El Callao', lat: 7.35, lng: -61.8167 },
+  { name: 'Ciudad Guayana', lat: 8.35, lng: -62.65 },
   // --- Delta Amacuro ---
-  { name: 'Tucupita', lat: 9.0500, lng: -62.0500 },
+  { name: 'Tucupita', lat: 9.05, lng: -62.05 },
   // --- Amazonas ---
   { name: 'Puerto Ayacucho', lat: 5.6667, lng: -67.6333 },
   // --- Nueva Esparta ---
   { name: 'Porlamar', lat: 10.9589, lng: -63.8694 },
   { name: 'La Asunción', lat: 11.0292, lng: -63.8678 },
   { name: 'Pampatar', lat: 10.9944, lng: -63.7897 },
-  { name: 'Juan Griego', lat: 11.0825, lng: -63.9650 },
+  { name: 'Juan Griego', lat: 11.0825, lng: -63.965 },
   { name: 'El Yaque', lat: 10.9025, lng: -63.9344 },
-  { name: 'Punta de Piedras', lat: 10.9000, lng: -64.1000 },
+  { name: 'Punta de Piedras', lat: 10.9, lng: -64.1 },
   // --- Cojedes ---
-  { name: 'San Carlos', lat: 9.6500, lng: -68.5833 },
-  { name: 'Tinaco', lat: 9.7000, lng: -68.4333 },
+  { name: 'San Carlos', lat: 9.65, lng: -68.5833 },
+  { name: 'Tinaco', lat: 9.7, lng: -68.4333 },
   // --- Trujillo ---
   { name: 'Valera', lat: 9.3167, lng: -70.6167 },
   { name: 'Trujillo', lat: 9.3667, lng: -70.4333 },
-  { name: 'Boconó', lat: 9.2500, lng: -70.2667 },
+  { name: 'Boconó', lat: 9.25, lng: -70.2667 },
   // --- Portuguesa ---
-  { name: 'Acarigua', lat: 9.5500, lng: -69.2000 },
+  { name: 'Acarigua', lat: 9.55, lng: -69.2 },
   { name: 'Araure', lat: 9.5667, lng: -69.2167 },
-  { name: 'Guanare', lat: 9.0333, lng: -69.7500 },
+  { name: 'Guanare', lat: 9.0333, lng: -69.75 },
   // --- Barinas ---
   { name: 'Barinas', lat: 8.6167, lng: -70.2167 },
   { name: 'Socopó', lat: 8.2333, lng: -70.8333 },
-  { name: 'Santa Bárbara', lat: 7.8000, lng: -71.1833 },
+  { name: 'Santa Bárbara', lat: 7.8, lng: -71.1833 },
   // --- Guárico ---
-  { name: 'San Juan de los Morros', lat: 9.9000, lng: -67.3500 },
+  { name: 'San Juan de los Morros', lat: 9.9, lng: -67.35 },
   { name: 'Calabozo', lat: 8.9333, lng: -67.4333 },
-  { name: 'Valle de la Pascua', lat: 9.2000, lng: -66.0167 },
+  { name: 'Valle de la Pascua', lat: 9.2, lng: -66.0167 },
   { name: 'Zaraza', lat: 9.3333, lng: -65.3333 },
-  { name: 'Altagracia de Orituco', lat: 9.8500, lng: -66.3833 },
+  { name: 'Altagracia de Orituco', lat: 9.85, lng: -66.3833 },
   // --- Apure ---
   { name: 'San Fernando de Apure', lat: 7.8833, lng: -67.4667 },
-  { name: 'Guasdualito', lat: 7.2500, lng: -70.7333 },
-  { name: 'Elorza', lat: 7.0667, lng: -69.5000 },
+  { name: 'Guasdualito', lat: 7.25, lng: -70.7333 },
+  { name: 'Elorza', lat: 7.0667, lng: -69.5 },
 ];
 
 const LOC_PREFIXES = [
@@ -225,73 +225,163 @@ const LOC_PREFIXES = [
 ];
 
 const TEMPLATES = [
-  (loc: string, n: number) => `Se derrumbó un edificio en ${loc}, hay ${n} personas atrapadas bajo los escombros, necesitamos maquinaria pesada urgente`,
-  (loc: string, n: number) => `Colapsó una vivienda en ${loc} por las lluvias, ${n} familias perdieron todo lo que tenían`,
-  (loc: string, n: number) => `Incendio descontrolado en ${loc}, el fuego consumió ${n} viviendas y avanza rápido`,
-  (loc: string, n: number) => `Deslave de tierra en ${loc}, ${n} casas quedaron sepultadas, hay personas desaparecidas`,
-  (loc: string, n: number) => `Explosión por acumulación de gas en ${loc}, dejó ${n} heridos graves y daños materiales enormes`,
-  (loc: string, n: number) => `Inundación repentina en ${loc}, el agua subió hasta los techos y ${n} personas quedaron atrapadas`,
-  (loc: string, n: number) => `Buscamos a ${n} personas desaparecidas en ${loc}, salieron ayer y no regresaron a sus casas`,
-  (loc: string, n: number) => `${n} niños con deshidratación severa en ${loc}, el ambulatorio no tiene suero ni medicinas básicas`,
-  (loc: string, n: number) => `Corte de agua lleva ${n} días en ${loc}, las familias están comprando agua a camiones cisterna a precios muy altos`,
-  (loc: string, n: number) => `${n} familias sin alimentos en ${loc}, los niños llevan dos días sin comer, necesitamos ayuda urgente`,
-  (loc: string, n: number) => `Desbordamiento del río en ${loc}, ${n} viviendas fueron arrastradas por la corriente`,
-  (loc: string, n: number) => `Mujer embarazada con complicaciones en ${loc}, necesita ambulancia urgente, tiene contracciones cada 2 minutos`,
-  (loc: string, n: number) => `Paro cardíaco en ${loc}, un adulto mayor se desplomó en la vía pública, alguien sabe RCP pero necesita desfibrilador`,
-  (loc: string, n: number) => `Adulto mayor abandonado en ${loc}, tiene ${n} años y está solo sin comida ni medicinas desde hace días`,
-  (loc: string, n: number) => `Grietas profundas en las paredes de ${n} edificios en ${loc}, los vecinos temen que se caigan con el próximo sismo`,
-  (loc: string, n: number) => `Fuga de gas peligrosa en ${loc}, están evacuando ${n} manzanas a la redonda por riesgo de explosión`,
-  (loc: string, n: number) => `Accidente de tránsito múltiple en ${loc}, ${n} vehículos involucrados y varios heridos atrapados dentro`,
-  (loc: string, n: number) => `Disparos en ${loc} durante ${n} horas, los vecinos no pueden salir de sus casas, hay heridos`,
-  (loc: string, n: number) => `Derrumbe de un cerro en ${loc}, ${n} toneladas de tierra cayeron sobre la carretera principal y hay vehículos sepultados`,
-  (loc: string, n: number) => `${n} adolescentes intoxicados con alcohol adulterado en ${loc}, están graves en la emergencia del hospital`,
-  (loc: string, n: number) => `Corte eléctrico en el hospital de ${loc}, los generadores funcionan pero solo tienen combustible para ${n} horas más`,
-  (loc: string, n: number) => `Se cayó un árbol gigante en ${loc}, bloqueó la calle principal y dañó ${n} vehículos estacionados`,
-  (loc: string, n: number) => `Brote de diarrea en ${n} niños de ${loc}, el agua de la quebrada está contaminada con aguas negras`,
-  (loc: string, n: number) => `Incendio en un depósito de reciclaje en ${loc}, el humo negro se ve desde ${n} kilómetros a la redonda`,
-  (loc: string, n: number) => `Alud de lodo en la carretera cerca de ${loc}, hay personas atrapadas dentro de sus vehículos`,
-  (loc: string, n: number) => `Tanque de agua potable contaminado en ${loc}, ${n} familias beben agua sucia y ya hay casos de diarrea`,
-  (loc: string, n: number) => `Desapareció una niña de ${n} años en ${loc}, salió a la escuela y nunca llegó, lleva 24 horas perdida`,
-  (loc: string, n: number) => `Riña colectiva en ${loc}, ${n} personas heridas con arma blanca y una está muy grave`,
-  (loc: string, n: number) => `Refugio colapsó en ${loc}: ${n} personas duermen a la intemperie porque no hay espacio para todos`,
-  (loc: string, n: number) => `Se reporta un sismo de magnitud ${(n / 10 + 4).toFixed(1)} en ${loc}, hay grietas en varias edificaciones`,
-  (loc: string, n: number) => `Se necesitan donantes de sangre tipo O+ para ${n} heridos graves en el hospital de ${loc}`,
-  (loc: string, n: number) => `La quebrada de ${loc} se desbordó, ${n} familias perdieron sus enseres y están en los techos esperando rescate`,
-  (loc: string, n: number) => `Plantas de tratamiento de agua dañadas en ${loc}, ${n} barrios sin servicio por tiempo indeterminado`,
-  (loc: string, n: number) => `Desplome de un puente peatonal en ${loc}, dejó varias personas heridas que cayeron desde gran altura`,
-  (loc: string, n: number) => `Incendio estructural en un galpón industrial en ${loc}, ${n} trabajadores lograron salir pero hay uno atrapado`,
-  (loc: string, n: number) => `Vivienda precaria colapsó en ${loc}, una familia de ${n} personas quedó damnificada y necesita refugio urgente`,
-  (loc: string, n: number) => `En ${loc} hay ${n} pacientes graves y el hospital no tiene insumos para tratarlos`,
-  (loc: string, n: number) => `Lluvias torrenciales en ${loc}, el nivel del río subió ${n} metros en una hora, evacuación preventiva activada`,
-  (loc: string, n: number) => `Se registraron ${n} réplicas del sismo en ${loc}, la población está en pánico y duerme en las calles`,
-  (loc: string, n: number) => `Fallas en el sistema de cloacas en ${loc}, las aguas negras brotan en las calles y hay riesgo de epidemia`,
-  (loc: string, n: number) => `Se necesita transporte para evacuar ${n} personas de ${loc}, las calles están bloqueadas por el lodo`,
-  (loc: string, n: number) => `Un poste de luz cayó en ${loc}, hay cables electrificados en la calle y ${n} casas sin electricidad`,
-  (loc: string, n: number) => `Se reportan ${n} casos de dengue en ${loc}, el hospital está colapsado y no tienen medicamentos`,
-  (loc: string, n: number) => `Deslizamiento de tierra en ${loc}, ${n} viviendas están en riesgo de colapsar, necesitan ser evacuadas ya`,
-  (loc: string, n: number) => `Incendio forestal en ${loc}, el fuego se acerca a ${n} viviendas y el viento está fuerte`,
-  (loc: string, n: number) => `Robo con violencia en ${loc}, ${n} vecinos fueron asaltados en sus casas anoche, hay inseguridad total`,
-  (loc: string, n: number) => `Filtración de gas en ${loc}, ${n} familias fueron evacuadas por prevención, bomberos en el sitio`,
-  (loc: string, n: number) => `Colapso de un muro de contención en ${loc}, ${n} casas quedaron expuestas a derrumbes`,
-  (loc: string, n: number) => `Se busca a ${n} pescadores desaparecidos en ${loc}, salieron al mar y no regresaron, mal tiempo`,
-  (loc: string, n: number) => `Cerro amenaza con derrumbarse sobre ${n} viviendas en ${loc}, están pidiendo reubicación urgente`,
-  (loc: string, n: number) => `Ancianos abandonados en ${loc}, ${n} adultos mayores están solos sin agua ni comida desde hace una semana`,
+  (loc: string, n: number) =>
+    `Se derrumbó un edificio en ${loc}, hay ${n} personas atrapadas bajo los escombros, necesitamos maquinaria pesada urgente`,
+  (loc: string, n: number) =>
+    `Colapsó una vivienda en ${loc} por las lluvias, ${n} familias perdieron todo lo que tenían`,
+  (loc: string, n: number) =>
+    `Incendio descontrolado en ${loc}, el fuego consumió ${n} viviendas y avanza rápido`,
+  (loc: string, n: number) =>
+    `Deslave de tierra en ${loc}, ${n} casas quedaron sepultadas, hay personas desaparecidas`,
+  (loc: string, n: number) =>
+    `Explosión por acumulación de gas en ${loc}, dejó ${n} heridos graves y daños materiales enormes`,
+  (loc: string, n: number) =>
+    `Inundación repentina en ${loc}, el agua subió hasta los techos y ${n} personas quedaron atrapadas`,
+  (loc: string, n: number) =>
+    `Buscamos a ${n} personas desaparecidas en ${loc}, salieron ayer y no regresaron a sus casas`,
+  (loc: string, n: number) =>
+    `${n} niños con deshidratación severa en ${loc}, el ambulatorio no tiene suero ni medicinas básicas`,
+  (loc: string, n: number) =>
+    `Corte de agua lleva ${n} días en ${loc}, las familias están comprando agua a camiones cisterna a precios muy altos`,
+  (loc: string, n: number) =>
+    `${n} familias sin alimentos en ${loc}, los niños llevan dos días sin comer, necesitamos ayuda urgente`,
+  (loc: string, n: number) =>
+    `Desbordamiento del río en ${loc}, ${n} viviendas fueron arrastradas por la corriente`,
+  (loc: string, n: number) =>
+    `Mujer embarazada con complicaciones en ${loc}, necesita ambulancia urgente, tiene contracciones cada 2 minutos`,
+  (loc: string, n: number) =>
+    `Paro cardíaco en ${loc}, un adulto mayor se desplomó en la vía pública, alguien sabe RCP pero necesita desfibrilador`,
+  (loc: string, n: number) =>
+    `Adulto mayor abandonado en ${loc}, tiene ${n} años y está solo sin comida ni medicinas desde hace días`,
+  (loc: string, n: number) =>
+    `Grietas profundas en las paredes de ${n} edificios en ${loc}, los vecinos temen que se caigan con el próximo sismo`,
+  (loc: string, n: number) =>
+    `Fuga de gas peligrosa en ${loc}, están evacuando ${n} manzanas a la redonda por riesgo de explosión`,
+  (loc: string, n: number) =>
+    `Accidente de tránsito múltiple en ${loc}, ${n} vehículos involucrados y varios heridos atrapados dentro`,
+  (loc: string, n: number) =>
+    `Disparos en ${loc} durante ${n} horas, los vecinos no pueden salir de sus casas, hay heridos`,
+  (loc: string, n: number) =>
+    `Derrumbe de un cerro en ${loc}, ${n} toneladas de tierra cayeron sobre la carretera principal y hay vehículos sepultados`,
+  (loc: string, n: number) =>
+    `${n} adolescentes intoxicados con alcohol adulterado en ${loc}, están graves en la emergencia del hospital`,
+  (loc: string, n: number) =>
+    `Corte eléctrico en el hospital de ${loc}, los generadores funcionan pero solo tienen combustible para ${n} horas más`,
+  (loc: string, n: number) =>
+    `Se cayó un árbol gigante en ${loc}, bloqueó la calle principal y dañó ${n} vehículos estacionados`,
+  (loc: string, n: number) =>
+    `Brote de diarrea en ${n} niños de ${loc}, el agua de la quebrada está contaminada con aguas negras`,
+  (loc: string, n: number) =>
+    `Incendio en un depósito de reciclaje en ${loc}, el humo negro se ve desde ${n} kilómetros a la redonda`,
+  (loc: string, n: number) =>
+    `Alud de lodo en la carretera cerca de ${loc}, hay personas atrapadas dentro de sus vehículos`,
+  (loc: string, n: number) =>
+    `Tanque de agua potable contaminado en ${loc}, ${n} familias beben agua sucia y ya hay casos de diarrea`,
+  (loc: string, n: number) =>
+    `Desapareció una niña de ${n} años en ${loc}, salió a la escuela y nunca llegó, lleva 24 horas perdida`,
+  (loc: string, n: number) =>
+    `Riña colectiva en ${loc}, ${n} personas heridas con arma blanca y una está muy grave`,
+  (loc: string, n: number) =>
+    `Refugio colapsó en ${loc}: ${n} personas duermen a la intemperie porque no hay espacio para todos`,
+  (loc: string, n: number) =>
+    `Se reporta un sismo de magnitud ${(n / 10 + 4).toFixed(1)} en ${loc}, hay grietas en varias edificaciones`,
+  (loc: string, n: number) =>
+    `Se necesitan donantes de sangre tipo O+ para ${n} heridos graves en el hospital de ${loc}`,
+  (loc: string, n: number) =>
+    `La quebrada de ${loc} se desbordó, ${n} familias perdieron sus enseres y están en los techos esperando rescate`,
+  (loc: string, n: number) =>
+    `Plantas de tratamiento de agua dañadas en ${loc}, ${n} barrios sin servicio por tiempo indeterminado`,
+  (loc: string, n: number) =>
+    `Desplome de un puente peatonal en ${loc}, dejó varias personas heridas que cayeron desde gran altura`,
+  (loc: string, n: number) =>
+    `Incendio estructural en un galpón industrial en ${loc}, ${n} trabajadores lograron salir pero hay uno atrapado`,
+  (loc: string, n: number) =>
+    `Vivienda precaria colapsó en ${loc}, una familia de ${n} personas quedó damnificada y necesita refugio urgente`,
+  (loc: string, n: number) =>
+    `En ${loc} hay ${n} pacientes graves y el hospital no tiene insumos para tratarlos`,
+  (loc: string, n: number) =>
+    `Lluvias torrenciales en ${loc}, el nivel del río subió ${n} metros en una hora, evacuación preventiva activada`,
+  (loc: string, n: number) =>
+    `Se registraron ${n} réplicas del sismo en ${loc}, la población está en pánico y duerme en las calles`,
+  (loc: string, n: number) =>
+    `Fallas en el sistema de cloacas en ${loc}, las aguas negras brotan en las calles y hay riesgo de epidemia`,
+  (loc: string, n: number) =>
+    `Se necesita transporte para evacuar ${n} personas de ${loc}, las calles están bloqueadas por el lodo`,
+  (loc: string, n: number) =>
+    `Un poste de luz cayó en ${loc}, hay cables electrificados en la calle y ${n} casas sin electricidad`,
+  (loc: string, n: number) =>
+    `Se reportan ${n} casos de dengue en ${loc}, el hospital está colapsado y no tienen medicamentos`,
+  (loc: string, n: number) =>
+    `Deslizamiento de tierra en ${loc}, ${n} viviendas están en riesgo de colapsar, necesitan ser evacuadas ya`,
+  (loc: string, n: number) =>
+    `Incendio forestal en ${loc}, el fuego se acerca a ${n} viviendas y el viento está fuerte`,
+  (loc: string, n: number) =>
+    `Robo con violencia en ${loc}, ${n} vecinos fueron asaltados en sus casas anoche, hay inseguridad total`,
+  (loc: string, n: number) =>
+    `Filtración de gas en ${loc}, ${n} familias fueron evacuadas por prevención, bomberos en el sitio`,
+  (loc: string, n: number) =>
+    `Colapso de un muro de contención en ${loc}, ${n} casas quedaron expuestas a derrumbes`,
+  (loc: string, n: number) =>
+    `Se busca a ${n} pescadores desaparecidos en ${loc}, salieron al mar y no regresaron, mal tiempo`,
+  (loc: string, n: number) =>
+    `Cerro amenaza con derrumbarse sobre ${n} viviendas en ${loc}, están pidiendo reubicación urgente`,
+  (loc: string, n: number) =>
+    `Ancianos abandonados en ${loc}, ${n} adultos mayores están solos sin agua ni comida desde hace una semana`,
 ];
 
 const SOURCES = ['whatsapp', 'whatsapp', 'telefono', 'pwa', 'redes'] as const;
 
 const NAMES = [
-  'María Pérez', 'José Rodríguez', 'Ana Gómez', 'Luis Martínez', 'Carla Díaz',
-  'Pedro Sánchez', 'Rosa Herrera', 'Miguel Torres', 'Yolanda Ríos', 'Carlos Mendoza',
-  'Sofía Medina', 'Diego Castillo', 'Valentina López', 'Andrés Silva', 'Gabriela Moreno',
-  'Samuel Contreras', 'Isabella Rojas', 'Mateo Hernández', 'Victoria Jiménez',
-  'Sebastián Díaz', 'Daniela Peña', 'Jorge Ramos', 'Camila Flores', 'Fernando Ortiz',
-  'Luciana Gil', 'Pablo Acosta', 'Martina Cárdenas', 'Adrián Delgado', 'Julieta Paredes',
-  'Emilio Guerrero', 'Bárbara Salazar', 'Leonardo Quintero', 'Andrea Cordero',
-  'Joaquín Montero', 'Sara Navarro', 'Facundo Rivas', 'Antonella Campos',
-  'Nicolás Herrera', 'Renata Suárez', 'Bruno Vega', 'Emilia Paz', 'Martín León',
-  'Josefina Mora', 'Benjamín Soto', 'Guadalupe Ferrer', 'Santiago Cruz',
-  'Mariana Ochoa', 'Tomás Aguirre', 'Valeria Bravo', 'Maximiliano Luna',
+  'María Pérez',
+  'José Rodríguez',
+  'Ana Gómez',
+  'Luis Martínez',
+  'Carla Díaz',
+  'Pedro Sánchez',
+  'Rosa Herrera',
+  'Miguel Torres',
+  'Yolanda Ríos',
+  'Carlos Mendoza',
+  'Sofía Medina',
+  'Diego Castillo',
+  'Valentina López',
+  'Andrés Silva',
+  'Gabriela Moreno',
+  'Samuel Contreras',
+  'Isabella Rojas',
+  'Mateo Hernández',
+  'Victoria Jiménez',
+  'Sebastián Díaz',
+  'Daniela Peña',
+  'Jorge Ramos',
+  'Camila Flores',
+  'Fernando Ortiz',
+  'Luciana Gil',
+  'Pablo Acosta',
+  'Martina Cárdenas',
+  'Adrián Delgado',
+  'Julieta Paredes',
+  'Emilio Guerrero',
+  'Bárbara Salazar',
+  'Leonardo Quintero',
+  'Andrea Cordero',
+  'Joaquín Montero',
+  'Sara Navarro',
+  'Facundo Rivas',
+  'Antonella Campos',
+  'Nicolás Herrera',
+  'Renata Suárez',
+  'Bruno Vega',
+  'Emilia Paz',
+  'Martín León',
+  'Josefina Mora',
+  'Benjamín Soto',
+  'Guadalupe Ferrer',
+  'Santiago Cruz',
+  'Mariana Ochoa',
+  'Tomás Aguirre',
+  'Valeria Bravo',
+  'Maximiliano Luna',
 ];
 
 function mulberry32(seed: number): () => number {
@@ -330,14 +420,21 @@ function randomPhone(rng: () => number): string {
  */
 function generateMessages(total: number, seed: number) {
   const rng = mulberry32(seed);
-  const messages: Array<{ text: string; phone: string; name: string; lat: number; lng: number; source: string }> = [];
+  const messages: Array<{
+    text: string;
+    phone: string;
+    name: string;
+    lat: number;
+    lng: number;
+    source: string;
+  }> = [];
   const remaining = TOWNS.slice(); // copia para consumir sin repetir en lo posible
   let waveType: string | null = null;
   let waveCount = 0;
 
   for (let i = 0; i < total; i++) {
     // Selección aleatoria de ubicación con sesgo a no repetir
-    let base: typeof TOWNS[number];
+    let base: (typeof TOWNS)[number];
     if (remaining.length > 0 && rng() < 0.7) {
       const idx = Math.floor(rng() * remaining.length);
       base = remaining.splice(idx, 1)[0];
@@ -411,7 +508,11 @@ function generateMessages(total: number, seed: number) {
  * - Silencio: pausas de 2-5s que simulan momentos sin novedades.
  * - Noche: cada ~30s hay una "noche" que ralentiza todo (8-15s de silencio).
  */
-function* trafficPattern(total: number, waveRegions: boolean[], rng: () => number): Generator<number> {
+function* trafficPattern(
+  total: number,
+  waveRegions: boolean[],
+  rng: () => number,
+): Generator<number> {
   let nightTimer = 0;
   for (let i = 0; i < total; i++) {
     const inWave = waveRegions[i] ?? false;
@@ -455,8 +556,10 @@ async function main() {
   const waveRegions: boolean[] = [];
   let wave = 0;
   for (let i = 0; i < total; i++) {
-    if (wave > 0) { waveRegions.push(true); wave--; }
-    else {
+    if (wave > 0) {
+      waveRegions.push(true);
+      wave--;
+    } else {
       waveRegions.push(false);
       if (i > 0 && i % randInt(60, 120, rng) === 0) wave = randInt(15, 35, rng);
     }
@@ -468,9 +571,13 @@ async function main() {
 
   const delays = [...trafficPattern(total, waveRegions, mulberry32(seed + 2))];
 
-  console.log(`[seed-demo] ${total} reportes contra ${url} (seed=${seed}) — tráfico variable realista`);
+  console.log(
+    `[seed-demo] ${total} reportes contra ${url} (seed=${seed}) — tráfico variable realista`,
+  );
   const started = Date.now();
-  let ok = 0, failed = 0, duplicates = 0;
+  let ok = 0,
+    failed = 0,
+    duplicates = 0;
 
   for (let i = 0; i < messages.length; i++) {
     const msg = messages[i];
@@ -484,7 +591,14 @@ async function main() {
       const endpoint = isWa ? '/api/whatsapp/simulate' : '/api/reports';
       const body = isWa
         ? { text: msg.text, phone: msg.phone, name: msg.name, lat: msg.lat, lng: msg.lng }
-        : { source: msg.source, rawText: msg.text, reporterPhone: msg.phone, reporterName: msg.name, lat: msg.lat, lng: msg.lng };
+        : {
+            source: msg.source,
+            rawText: msg.text,
+            reporterPhone: msg.phone,
+            reporterName: msg.name,
+            lat: msg.lat,
+            lng: msg.lng,
+          };
       const t0 = Date.now();
       const res = await fetch(`${url}${endpoint}`, {
         method: 'POST',
@@ -495,7 +609,7 @@ async function main() {
 
       if (res.ok) {
         ok++;
-        const data = await res.json() as { report?: { duplicate_of: string | null } };
+        const data = (await res.json()) as { report?: { duplicate_of: string | null } };
         if (data.report?.duplicate_of) duplicates++;
         if (!quiet) {
           const waveMark = waveRegions[i] ? ' 🌊' : '';
@@ -514,7 +628,9 @@ async function main() {
 
     if (!quiet && (i + 1) % 50 === 0) {
       const elapsed = ((Date.now() - started) / 1000).toFixed(1);
-      console.log(`  ─── ${i + 1}/${total}  ✓${ok} ✗${failed}  dupes ${duplicates}  ${elapsed}s ───`);
+      console.log(
+        `  ─── ${i + 1}/${total}  ✓${ok} ✗${failed}  dupes ${duplicates}  ${elapsed}s ───`,
+      );
     }
   }
 

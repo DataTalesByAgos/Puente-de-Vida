@@ -31,9 +31,7 @@ export function buildCitizenReply(report: LocalReport): string {
     report.priority === 'critica'
       ? '\n\n⚠️ Es URGENTE: si hay vidas en peligro inmediato, llamá también a emergencias (171).'
       : '';
-  const ubicacion = report.locationText
-    ? `\n\n📍 Recibimos tu ubicación.`
-    : '';
+  const ubicacion = report.locationText ? `\n\n📍 Recibimos tu ubicación.` : '';
   return (
     `✅ Recibimos tu mensaje. Lo registramos como *${tipo}* con prioridad *${prioridad}* ` +
     `y ya está en el panel de los coordinadores.${ubicacion}${critico}\n\n` +

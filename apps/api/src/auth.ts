@@ -7,9 +7,14 @@ export function hashPass(pass: string, salt: string): string {
   return scryptSync(pass, salt, 64).toString('hex');
 }
 
-export function parseAuth(req: { headers?: Record<string, string | string[] | undefined> }): { userId: string; username: string; role: string } | null {
+export function parseAuth(req: {
+  headers?: Record<string, string | string[] | undefined>;
+}): { userId: string; username: string; role: string } | null {
   const authHeader = req.headers?.['authorization'];
-  const auth = (Array.isArray(authHeader) ? authHeader[0] : authHeader ?? '').replace(/^bearer\s+/i, '');
+  const auth = (Array.isArray(authHeader) ? authHeader[0] : (authHeader ?? '')).replace(
+    /^bearer\s+/i,
+    '',
+  );
   return sessions.get(auth) ?? null;
 }
 

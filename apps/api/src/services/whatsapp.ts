@@ -44,9 +44,7 @@ export function buildAutoReply(report: Report): string {
       ? '\n\n⚠️ Detectamos que es URGENTE: si hay vidas en peligro inmediato, llamá también a emergencias (171).'
       : '';
 
-  const ubicacion = report.location_text
-    ? `\n📍 Ubicación recibida: ${report.location_text}.`
-    : '';
+  const ubicacion = report.location_text ? `\n📍 Ubicación recibida: ${report.location_text}.` : '';
 
   return (
     `✅ *Puente de Vida* recibió tu mensaje.\n\n` +
@@ -89,7 +87,12 @@ async function sendViaGeneric(to: string, text: string): Promise<SendResult> {
   const url = config.whatsappApiUrl.replace('{phone_id}', config.whatsappPhoneId);
   if (!url) {
     console.warn('[whatsapp:generic] WHATSAPP_API_URL no está configurada');
-    return { provider: 'generic', delivered: false, simulated: false, error: 'WHATSAPP_API_URL no configurada' };
+    return {
+      provider: 'generic',
+      delivered: false,
+      simulated: false,
+      error: 'WHATSAPP_API_URL no configurada',
+    };
   }
   try {
     const res = await fetch(url, {
@@ -108,12 +111,22 @@ async function sendViaGeneric(to: string, text: string): Promise<SendResult> {
     if (!res.ok) {
       const detail = await res.text();
       console.warn(`[whatsapp:generic] envío falló (${res.status}): ${detail}`);
-      return { provider: 'generic', delivered: false, simulated: false, error: `HTTP ${res.status}` };
+      return {
+        provider: 'generic',
+        delivered: false,
+        simulated: false,
+        error: `HTTP ${res.status}`,
+      };
     }
     return { provider: 'generic', delivered: true, simulated: false };
   } catch (err) {
     console.warn('[whatsapp:generic] error de red:', (err as Error).message);
-    return { provider: 'generic', delivered: false, simulated: false, error: (err as Error).message };
+    return {
+      provider: 'generic',
+      delivered: false,
+      simulated: false,
+      error: (err as Error).message,
+    };
   }
 }
 
