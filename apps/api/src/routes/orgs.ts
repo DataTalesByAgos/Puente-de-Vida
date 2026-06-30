@@ -145,6 +145,16 @@ export async function orgRoutes(app: FastifyInstance): Promise<void> {
           org.id,
         ],
       );
+      query(
+        'INSERT INTO audit_log (username, action, entity, entity_id, detail) VALUES ($1, $2, $3, $4, $5)',
+        [
+          username,
+          'user.register',
+          'user',
+          user.id,
+          JSON.stringify({ organization: org.name, verified }),
+        ],
+      ).catch(() => {});
       return reply.status(201).send({
         id: user.id,
         username,

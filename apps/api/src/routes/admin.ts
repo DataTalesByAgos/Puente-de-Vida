@@ -178,56 +178,140 @@ export async function adminRoutes(app: FastifyInstance): Promise<void> {
   });
 
   // ── Export (viewer+) ────────────────────────────────────────────────────
-  app.get('/api/admin/reports/export', async (req, reply) => {
-    if (!parseAuth(req)) return reply.status(401).send({ error: 'No autorizado' });
-    const format = ((req.query as Record<string, string>)?.format ?? 'json').toLowerCase();
-    const rows = await query<Record<string, unknown>>(
-      'SELECT id, source, raw_text, incident_type, priority, status, lat, lng, location_text, people_affected, confidence, recommended_team, reporter_name, reporter_phone, ai_engine, duplicate_of, group_relation_type, group_score, created_at FROM reports WHERE duplicate_of IS NULL ORDER BY created_at DESC',
-    );
-
-    if (format === 'csv') {
-      if (rows.length === 0)
-        return reply
-          .type('text/csv')
-          .send(
-            'id,source,incident_type,priority,status,location_text,people_affected,confidence,reporter_name,reporter_phone,ai_engine,created_at\n',
-          );
-      const keys = [
-        'id',
-        'source',
-        'incident_type',
-        'priority',
-        'status',
-        'location_text',
-        'people_affected',
-        'confidence',
-        'reporter_name',
-        'reporter_phone',
-        'ai_engine',
-        'created_at',
-      ];
-      const header = keys.join(',');
-      const lines = rows.map((r) =>
-        keys
-          .map((k) => {
-            const v = r[k];
-            if (v == null) return '';
-            const s = String(v);
-            return s.includes(',') || s.includes('"') ? `"${s.replace(/"/g, '""')}"` : s;
-          })
-          .join(','),
+  // El export retorna solo datos anonimizados (sin nombres, teléfonos ni fotos)
+  // y registra la exportación en audit_log.
+  // Se registra bajo dos rutas para compatibilidad (con y sin /reports/).
+  app.route({
+    method: 'GET',
+    url: '/api/admin/reports/export',
+    handler: async (req, reply) => {
+      const s = parseAuth(req);
+      if (!s) return reply.status(401).send({ error: 'No autorizado' });
+      const fmt = ((req.query as Record<string, string>)?.format ?? 'json').toLowerCase();
+      const rows = await query<Record<string, unknown>>(
+        `SELECT id, source, incident_type, priority, status,
+                lat, lng, location_text, people_affected, confidence,
+                recommended_team, ai_engine, duplicate_of,
+                group_relation_type, group_score, created_at
+           FROM reports WHERE duplicate_of IS NULL ORDER BY created_at DESC`,
       );
+      query(
+        `INSERT INTO audit_log (user_id, username, action, entity, entity_id, detail)
+         VALUES ($1, $2, 'export', 'report', NULL, $3)`,
+        [
+          s.userId !== 'env' ? s.userId : null,
+          s.username,
+          JSON.stringify({ format: fmt, count: rows.length }),
+        ],
+      ).catch(() => {});
+      if (fmt === 'csv') {
+        if (rows.length === 0)
+          return reply
+            .type('text/csv')
+            .send(
+              'id,source,incident_type,priority,status,location_text,people_affected,confidence,recommended_team,ai_engine,created_at\n',
+            );
+        const keys = [
+          'id',
+          'source',
+          'incident_type',
+          'priority',
+          'status',
+          'location_text',
+          'people_affected',
+          'confidence',
+          'recommended_team',
+          'ai_engine',
+          'created_at',
+        ];
+        const lines = rows.map((x: Record<string, unknown>) =>
+          keys
+            .map((k) => {
+              const v = x[k];
+              if (v == null) return '';
+              const s = String(v);
+              return s.includes(',') || s.includes('"') ? `"${s.replace(/"/g, '""')}"` : s;
+            })
+            .join(','),
+        );
+        reply.header(
+          'Content-Disposition',
+          `attachment; filename="reportes-${new Date().toISOString().slice(0, 10)}.csv"`,
+        );
+        return reply.type('text/csv; charset=utf-8').send([keys.join(','), ...lines].join('\n'));
+      }
       reply.header(
         'Content-Disposition',
-        `attachment; filename="reportes-${new Date().toISOString().slice(0, 10)}.csv"`,
+        `attachment; filename="reportes-${new Date().toISOString().slice(0, 10)}.json"`,
       );
-      return reply.type('text/csv; charset=utf-8').send([header, ...lines].join('\n'));
-    }
-    reply.header(
-      'Content-Disposition',
-      `attachment; filename="reportes-${new Date().toISOString().slice(0, 10)}.json"`,
-    );
-    return reply.send(rows);
+      return reply.send(rows);
+    },
+  });
+  app.route({
+    method: 'GET',
+    url: '/api/admin/export',
+    handler: async (req, reply) => {
+      const s = parseAuth(req);
+      if (!s) return reply.status(401).send({ error: 'No autorizado' });
+      const fmt = ((req.query as Record<string, string>)?.format ?? 'json').toLowerCase();
+      const rows = await query<Record<string, unknown>>(
+        `SELECT id, source, incident_type, priority, status,
+                lat, lng, location_text, people_affected, confidence,
+                recommended_team, ai_engine, duplicate_of,
+                group_relation_type, group_score, created_at
+           FROM reports WHERE duplicate_of IS NULL ORDER BY created_at DESC`,
+      );
+      query(
+        `INSERT INTO audit_log (user_id, username, action, entity, entity_id, detail)
+         VALUES ($1, $2, 'export', 'report', NULL, $3)`,
+        [
+          s.userId !== 'env' ? s.userId : null,
+          s.username,
+          JSON.stringify({ format: fmt, count: rows.length }),
+        ],
+      ).catch(() => {});
+      if (fmt === 'csv') {
+        if (rows.length === 0)
+          return reply
+            .type('text/csv')
+            .send(
+              'id,source,incident_type,priority,status,location_text,people_affected,confidence,recommended_team,ai_engine,created_at\n',
+            );
+        const keys = [
+          'id',
+          'source',
+          'incident_type',
+          'priority',
+          'status',
+          'location_text',
+          'people_affected',
+          'confidence',
+          'recommended_team',
+          'ai_engine',
+          'created_at',
+        ];
+        const lines = rows.map((x: Record<string, unknown>) =>
+          keys
+            .map((k) => {
+              const v = x[k];
+              if (v == null) return '';
+              const s = String(v);
+              return s.includes(',') || s.includes('"') ? `"${s.replace(/"/g, '""')}"` : s;
+            })
+            .join(','),
+        );
+        reply.header(
+          'Content-Disposition',
+          `attachment; filename="reportes-${new Date().toISOString().slice(0, 10)}.csv"`,
+        );
+        return reply.type('text/csv; charset=utf-8').send([keys.join(','), ...lines].join('\n'));
+      }
+      reply.header(
+        'Content-Disposition',
+        `attachment; filename="reportes-${new Date().toISOString().slice(0, 10)}.json"`,
+      );
+      return reply.send(rows);
+    },
   });
 
   // ── Config (admin+) ────────────────────────────────────────────────────

@@ -5,7 +5,9 @@ import { generateSummary, type SummaryInput } from '../ai/summary';
 
 export async function dashboardRoutes(app: FastifyInstance): Promise<void> {
   // Métricas agregadas para el panel de coordinación.
-  app.get('/api/dashboard/stats', async (_req, reply) => {
+  app.get('/api/dashboard/stats', async (req, reply) => {
+    const s = parseAuth(req);
+    if (!s) return reply.status(401).send({ error: 'Se requiere autenticación' });
     const [byType, byPriority, byStatus, totals, shelters, volunteers] = await Promise.all([
       query(
         `SELECT incident_type, count(*)::int AS count

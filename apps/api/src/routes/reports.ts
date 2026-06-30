@@ -70,6 +70,10 @@ export async function reportsRoutes(app: FastifyInstance): Promise<void> {
     const { id } = req.params as { id: string };
     const report = await getReport(id);
     if (!report) return reply.status(404).send({ error: 'No encontrado' });
+    query(
+      'INSERT INTO audit_log (user_id, username, action, entity, entity_id, detail) VALUES ($1, $2, $3, $4, $5, $6)',
+      [s.userId !== 'env' ? s.userId : null, s.username, 'view_report', 'report', id, null],
+    ).catch(() => {});
     return reply.send(filterReport(report as unknown as Record<string, unknown>, s));
   });
 

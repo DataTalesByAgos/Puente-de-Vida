@@ -508,7 +508,7 @@ export default function AdminPage() {
               className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 transition-colors"
               onClick={(e) => {
                 e.preventDefault();
-                fetch(`${API_URL}/api/admin/export?format=csv`, {
+                fetch(`${API_URL}/api/admin/reports/export?format=csv`, {
                   headers: { Authorization: `Bearer ${token}` },
                 })
                   .then((r) => r.blob())
@@ -527,7 +527,7 @@ export default function AdminPage() {
               className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
               onClick={(e) => {
                 e.preventDefault();
-                fetch(`${API_URL}/api/admin/export?format=json`, {
+                fetch(`${API_URL}/api/admin/reports/export?format=json`, {
                   headers: { Authorization: `Bearer ${token}` },
                 })
                   .then((r) => r.blob())

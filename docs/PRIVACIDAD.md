@@ -69,7 +69,7 @@ Cuando un reporte involucra a un menor de edad (< 18 años o detectado por heur�
 
 ## Cédulas de identidad
 
-- Las cédulas siempre se muestran enmascaradas: `V-17****208` (misma política que Localizados Venezuela).
+- Las cédulas siempre se muestran enmascaradas: `V-17****208`.
 - Solo los primeros 2 y últimos 3 dígitos son visibles.
 - Esto aplica a todos los roles, incluyendo admin.
 
@@ -111,6 +111,40 @@ Admin crea organización
 
 ---
 
+## Consentimiento del reportante
+
+- Todo reporte ingresado por un ciudadano presupone **consentimiento tácito** para su uso en la coordinación de emergencias, basado en el interés vital y la urgencia humanitaria.
+- El formulario de reporte incluye un aviso visible: _"Al enviar este reporte, autoriza el uso de sus datos para fines de coordinación de emergencias. Puede solicitar su eliminación en cualquier momento contactando a la organización coordinadora."_
+- Los datos no se utilizan para fines distintos a los declarados (coordinación de emergencias, búsqueda y rescate, asistencia humanitaria).
+
+---
+
+## Retención y eliminación de datos
+
+- Los reportes se conservan mientras sean relevantes para la emergencia activa.
+- Una vez finalizada la emergencia, los datos se **anonimizan** (se eliminan nombres, teléfonos y direcciones exactas) y se conservan únicamente con fines estadísticos y de mejora del servicio.
+- El período de retención máximo es de **2 años** posteriores al cierre de la emergencia.
+- Los operadores pueden solicitar la eliminación de sus cuentas contactando al administrador del sistema.
+- Los ciudadanos pueden solicitar la eliminación de sus reportes individuales.
+- Las sesiones expiran automáticamente a las **24 horas** y los tokens no se persisten.
+
+---
+
+## Derechos del titular de los datos
+
+Cualquier persona cuyos datos sean procesados por la plataforma tiene derecho a:
+
+1. **Acceso** — conocer qué datos suyos están siendo procesados.
+2. **Rectificación** — corregir datos inexactos o incompletos.
+3. **Supresión** — solicitar la eliminación de sus datos personales.
+4. **Limitación** — restringir el procesamiento en casos determinados.
+5. **Portabilidad** — recibir sus datos en formato estructurado (CSV/JSON).
+6. **Oposición** — oponerse al procesamiento para fines específicos.
+
+Para ejercer estos derechos, el titular debe contactar a la organización coordinadora a través de los canales indicados en la plataforma.
+
+---
+
 ## Transmisión de datos
 
 - Todas las llamadas API usan **HTTPS** en producción.
@@ -137,11 +171,16 @@ Los registros de auditoría se almacenan tanto localmente (IndexedDB) como en el
 
 ---
 
-## Cumplimiento
+## Normas y estándares aplicados
 
-Puente de Vida sigue las mejores prácticas de:
+Puente de Vida se alinea con los siguientes marcos normativos y estándares internacionales para el tratamiento de datos en contextos humanitarios:
 
-- **Ley Orgánica de Protección de Datos Personales (Venezuela)**
-- **Principios de KYC (Conozca a su Cliente)** adaptados a emergencias
-- **GDPR** en cuanto a minimización de datos y consentimiento
-- **ISO 27001** en control de acceso y trazabilidad
+- **Reglamento General de Protección de Datos (GDPR)** — minimización de datos, consentimiento, derecho de supresión, portabilidad.
+- **Ley Orgánica de Protección de Datos Personales (Venezuela, 2012)** — marco legal local aplicable.
+- **Convención sobre los Derechos del Niño (ONU, 1989)** — interés superior del niño, protección contra toda forma de violencia, derecho a la privacidad (Art. 16).
+- **Normas Esfera (Sphere Handbook)** — principios de protección en la respuesta humanitaria: "no hacer daño", acceso seguro, rendición de cuentas.
+- **Principios de Protección de Datos Humanitarios (OCHA / IASC)** — limitación de propósito, proporcionalidad, seguridad, participación.
+- **ISO/IEC 27001** — control de acceso, clasificación de información, gestión de incidentes, trazabilidad.
+- **Principios de la OCDE sobre Privacidad** — limitación de recogida, calidad de los datos, finalidad, seguridad, transparencia.
+- **Convención Americana sobre Derechos Humanos (Pacto de San José)** — derecho a la honra, reconocimiento de la dignidad, protección judicial (Art. 11, 25).
+- **Estándares del CICR para la Protección de Datos Personales en Acción Humanitaria** — datos biométricos, intercambio seguro, retención mínima.

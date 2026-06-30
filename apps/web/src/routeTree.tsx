@@ -1,6 +1,7 @@
 import { createRouter, createRootRoute, createRoute, Outlet } from '@tanstack/react-router';
 import { AppProvider } from '@/components/AppProvider';
 import { TopBar } from '@/components/TopBar';
+import { PrivacyFooter } from '@/components/PrivacyFooter';
 import DashboardPage from '@/pages/Dashboard';
 import AdminPage from '@/pages/Admin';
 import MapaPage from '@/pages/Mapa';
@@ -15,9 +16,7 @@ const rootRoute = createRootRoute({
       <main className="mx-auto max-w-5xl px-4 py-6">
         <Outlet />
       </main>
-      <footer className="mx-auto max-w-5xl px-4 pb-8 pt-2 text-center text-xs text-muted">
-        Puente de Vida · Coordinación de emergencias offline-first · Hecho para Build4Venezuela
-      </footer>
+      <PrivacyFooter />
     </AppProvider>
   ),
 });
