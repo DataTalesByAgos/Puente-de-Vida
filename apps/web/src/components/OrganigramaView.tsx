@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { LocalReport } from '@/lib/types';
@@ -76,6 +76,17 @@ export default function OrganigramaView({
 }) {
   const [orgs, setOrgs] = useState(initialOrgs);
   const [vols, setVols] = useState(initialVols);
+  const prevProps = useRef({ initialOrgs, initialVols });
+  useEffect(() => {
+    if (
+      initialOrgs !== prevProps.current.initialOrgs ||
+      initialVols !== prevProps.current.initialVols
+    ) {
+      prevProps.current = { initialOrgs, initialVols };
+      setOrgs(initialOrgs);
+      setVols(initialVols);
+    }
+  }, [initialOrgs, initialVols]);
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('todas');
   const [modalOpen, setModalOpen] = useState<'org' | 'vol' | null>(null);
