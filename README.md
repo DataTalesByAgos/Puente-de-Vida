@@ -52,7 +52,7 @@ graph TB
 ---
 
 📘 [**Documentación técnica**](docs/TECNICO.md) — arquitectura, clasificación offline, proveedores, API
-🧭 [**Roadmap**](docs/ROADMAP.md) — mejoras planificadas y cómo aportar
+🧭 [**Roadmap**](ROADMAP.md) — mejoras planificadas y cómo aportar
 
 ---
 
