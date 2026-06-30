@@ -1,6 +1,7 @@
 const tseslint = require('@typescript-eslint/eslint-plugin');
 const tsparser = require('@typescript-eslint/parser');
 const eslintConfigPrettier = require('eslint-config-prettier');
+const reactHooks = require('eslint-plugin-react-hooks');
 
 module.exports = [
   {
@@ -33,4 +34,5 @@ module.exports = [
     },
   },
   eslintConfigPrettier,
+  ...reactHooks.configs.flat.recommended,
 ];
