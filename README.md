@@ -51,6 +51,11 @@ graph TB
 
 ---
 
+📘 [**Documentación técnica**](docs/TECNICO.md) — arquitectura, clasificación offline, proveedores, API
+🧭 [**Roadmap**](docs/ROADMAP.md) — mejoras planificadas y cómo aportar
+
+---
+
 ## 🚀 Características
 
 - **Offline-first:** IndexedDB local + Service Worker con background sync. Opera sin conexión y sincroniza al recuperar red.
@@ -155,13 +160,6 @@ WHATSAPP_API_URL=https://tu-proveedor/api
 WHATSAPP_API_KEY=tu-api-key
 ```
 
----
-
 ## 📄 Licencia
 
 MIT
-
----
-
-📘 [Documentación técnica](docs/TECNICO.md) — arquitectura, clasificación offline, proveedores, API
-🧭 [Roadmap](docs/ROADMAP.md) — mejoras planificadas y cómo aportar
