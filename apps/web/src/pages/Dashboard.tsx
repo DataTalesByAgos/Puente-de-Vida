@@ -16,13 +16,7 @@ import {
   type LocalReport,
 } from '@/lib/types';
 import { PRIORITY_CHIP, PRIORITY_DOT, timeAgo } from '@/lib/format';
-import {
-  completenessLevel,
-  completenessBg,
-  COMPLETENESS_LABELS,
-  COMPLETENESS_SHORT,
-  type CompletenessLevel,
-} from '@/lib/completeness';
+import { completenessLevel, COMPLETENESS_LABELS, type CompletenessLevel } from '@/lib/completeness';
 
 function ReportModal({
   report,

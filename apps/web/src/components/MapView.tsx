@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { PRIORITY_COLOR, timeShort } from '@/lib/format';
+import { PRIORITY_COLOR } from '@/lib/format';
 import { PRIORITY_LABELS, TYPE_LABELS, type LocalReport } from '@/lib/types';
 
 // Mapa con Leaflet + OpenStreetMap. Usamos circleMarker (sin imágenes) para

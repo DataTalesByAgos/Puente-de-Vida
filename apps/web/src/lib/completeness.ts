@@ -14,12 +14,6 @@ export const COMPLETENESS_SHORT: Record<CompletenessLevel, string> = {
   incompleto: 'Incompleto',
 };
 
-const SCORE_LABEL: Record<CompletenessLevel, string> = {
-  completo: 'green',
-  semi: 'amber',
-  incompleto: 'red',
-};
-
 export function completenessColor(level: CompletenessLevel): string {
   return (
     {

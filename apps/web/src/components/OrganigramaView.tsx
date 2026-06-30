@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import type { LocalReport } from '@/lib/types';
-
 const ORG_COORDS: Record<string, [number, number]> = {
   Caracas: [10.4806, -66.9036],
   Petare: [10.4768, -66.8089],
