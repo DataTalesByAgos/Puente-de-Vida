@@ -1,9 +1,11 @@
 import { pool, waitForDb } from './db';
 import { SCHEMA_SQL } from './schema';
+import { seedExternalSources } from './services/ingestion';
 
 export async function runMigrations(): Promise<void> {
   await pool.query(SCHEMA_SQL);
-  console.log('[migrate] Esquema aplicado correctamente.');
+  await seedExternalSources();
+  console.log('[migrate] Esquema aplicado y fuentes externas sembradas.');
 }
 
 if (require.main === module) {

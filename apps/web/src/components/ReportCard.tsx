@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   PRIORITY_LABELS,
@@ -12,6 +13,7 @@ import {
 } from '@/lib/types';
 import { PRIORITY_CHIP, timeAgo } from '@/lib/format';
 import { completenessLevel, completenessBg, COMPLETENESS_SHORT } from '@/lib/completeness';
+import { QRCode } from './QRCode';
 
 const NEXT_STATUS: Record<Status, Status | null> = {
   nuevo: 'triage',
@@ -36,6 +38,7 @@ export function ReportCard({
   onAdvance?: (r: LocalReport, next: Status) => void;
   onSelect?: (r: LocalReport) => void;
 }) {
+  const [showQR, setShowQR] = useState(false);
   const next = NEXT_STATUS[report.status];
   const channel = SOURCE_META[report.source];
   const critical = report.priority === 'critica';
@@ -111,12 +114,40 @@ export function ReportCard({
 
       <div className="flex items-center justify-between gap-2 border-t border-line pt-2">
         <span className={`chip ${STATUS_CHIP[report.status]}`}>{STATUS_LABELS[report.status]}</span>
-        {onAdvance && next && (
-          <button className="btn-ghost px-3 py-1.5 text-xs" onClick={() => onAdvance(report, next)}>
-            Marcar: {STATUS_LABELS[next]} →
+        <div className="flex items-center gap-2">
+          <button
+            className="btn-ghost px-2 py-1.5 text-xs"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowQR(!showQR);
+            }}
+            title="Compartir por QR"
+          >
+            {showQR ? '✕' : '◈ QR'}
           </button>
-        )}
+          {onAdvance && next && (
+            <button
+              className="btn-ghost px-3 py-1.5 text-xs"
+              onClick={(e) => {
+                e.stopPropagation();
+                onAdvance(report, next);
+              }}
+            >
+              Marcar: {STATUS_LABELS[next]} →
+            </button>
+          )}
+        </div>
       </div>
+      {showQR && (
+        <div
+          className="flex justify-center border-t border-line pt-2"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <QRCode
+            data={`${window.location.origin}/reportar?ref=${report.clientId ?? report.key}`}
+          />
+        </div>
+      )}
     </motion.article>
   );
 }

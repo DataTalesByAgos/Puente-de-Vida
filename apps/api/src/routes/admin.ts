@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { query } from '../db';
 import { config } from '../config';
-import { sessions, hashPass, parseAuth, minRole, PERM } from '../auth';
+import { sessions, hashPass, parseAuth, createSession, minRole, PERM } from '../auth';
 
 // ---------------------------------------------------------------------------
 // Panel de administración: login, usuarios, stats, export, config, auditoría.
@@ -12,47 +12,80 @@ import { sessions, hashPass, parseAuth, minRole, PERM } from '../auth';
 
 export async function adminRoutes(app: FastifyInstance): Promise<void> {
   // ── Login ──────────────────────────────────────────────────────────────
-  app.post('/api/admin/login', async (req, reply) => {
-    const { user, pass } = (req.body ?? {}) as Record<string, unknown>;
-    const envUser = process.env.ADMIN_USER ?? 'admin';
-    const envPass = process.env.ADMIN_PASS;
-    const envRole = process.env.ADMIN_ROLE ?? 'admin';
+  app.post(
+    '/api/admin/login',
+    {
+      config: {
+        rateLimit: {
+          max: config.rateLimitLoginMax,
+          timeWindow: config.rateLimitLoginWindow,
+        },
+      },
+    },
+    async (req, reply) => {
+      const { user, pass } = (req.body ?? {}) as Record<string, unknown>;
+      const envUser = process.env.ADMIN_USER ?? 'admin';
+      const envPass = process.env.ADMIN_PASS;
+      const envRole = process.env.ADMIN_ROLE ?? 'admin';
+      const ip = req.ip;
 
-    // Intentar contra DB primero
-    const dbUsers = await query<{ id: string; username: string; password: string; role: string }>(
-      'SELECT id, username, password, role FROM users WHERE username = $1',
-      [user],
-    );
-    const dbUser = dbUsers[0];
+      const logFailed = (reason: string) => {
+        query('INSERT INTO audit_log (username, action, entity, detail) VALUES ($1, $2, $3, $4)', [
+          String(user ?? '?'),
+          'login.failed',
+          'auth',
+          JSON.stringify({ reason, ip }),
+        ]).catch(() => {});
+      };
 
-    if (dbUser) {
-      const [salt, storedHash] = dbUser.password.split(':');
-      const inputHash = hashPass(String(pass ?? ''), salt);
-      if (
-        storedHash &&
-        inputHash.length === storedHash.length &&
-        timingSafeEqual(Buffer.from(inputHash), Buffer.from(storedHash))
-      ) {
-        const token = randomBytes(32).toString('hex');
-        sessions.set(token, { userId: dbUser.id, username: dbUser.username, role: dbUser.role });
-        return reply.send({ token, username: dbUser.username, role: dbUser.role });
+      // Intentar contra DB primero
+      if (user) {
+        const dbUsers = await query<{
+          id: string;
+          username: string;
+          password: string;
+          role: string;
+        }>('SELECT id, username, password, role FROM users WHERE username = $1', [user]);
+        const dbUser = dbUsers[0];
+
+        if (dbUser) {
+          const [salt, storedHash] = dbUser.password.split(':');
+          const inputHash = hashPass(String(pass ?? ''), salt);
+          if (
+            storedHash &&
+            inputHash.length === storedHash.length &&
+            timingSafeEqual(Buffer.from(inputHash), Buffer.from(storedHash))
+          ) {
+            const token = createSession(dbUser.id, dbUser.username, dbUser.role);
+            return reply.send({ token, username: dbUser.username, role: dbUser.role });
+          }
+          logFailed('bad_password');
+          return reply.status(401).send({ error: 'Credenciales inválidas' });
+        }
       }
+
+      // Fallback env (comparación en tiempo constante)
+      if (
+        user === envUser &&
+        envPass != null &&
+        timingSafeEqual(Buffer.from(String(pass ?? '')), Buffer.from(envPass))
+      ) {
+        const token = createSession('env', envUser, envRole);
+        return reply.send({ token, username: envUser, role: envRole });
+      }
+
+      logFailed(user ? 'not_found' : 'missing_username');
       return reply.status(401).send({ error: 'Credenciales inválidas' });
-    }
-
-    // Fallback env
-    if (user === envUser && pass === envPass) {
-      const token = randomBytes(32).toString('hex');
-      sessions.set(token, { userId: 'env', username: envUser, role: envRole });
-      return reply.send({ token, username: envUser, role: envRole });
-    }
-
-    return reply.status(401).send({ error: 'Credenciales inválidas' });
-  });
+    },
+  );
 
   app.post('/api/admin/logout', async (req, reply) => {
-    const s = parseAuth(req);
-    if (s) sessions.delete(s.userId);
+    const authHeader = req.headers?.['authorization'] ?? '';
+    const token = (Array.isArray(authHeader) ? authHeader[0] : authHeader).replace(
+      /^bearer\s+/i,
+      '',
+    );
+    if (token) sessions.delete(token);
     return reply.send({ ok: true });
   });
 

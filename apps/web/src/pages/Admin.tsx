@@ -37,6 +37,7 @@ const ROLE_COLORS: Record<string, string> = {
 const TABS = [
   { id: 'stats', label: '📊 Estadísticas', minRole: 'viewer' },
   { id: 'orgs', label: '🏛️ Organizaciones', minRole: 'operator' },
+  { id: 'missing', label: '🔍 Desaparecidos', minRole: 'viewer' },
   { id: 'users', label: '👥 Usuarios', minRole: 'admin' },
   { id: 'config', label: '⚙️ Configuración', minRole: 'admin' },
   { id: 'export', label: '📥 Exportar', minRole: 'viewer' },
@@ -465,6 +466,9 @@ export default function AdminPage() {
         )}
 
         {/* ── Export ──────────────────────────────────────────────────── */}
+        {/* ── Desaparecidos (registros unificados) ─────────────────────── */}
+        {tab === 'missing' && <MissingPersonsView token={token!} apiAdmin={apiAdmin} />}
+
         {tab === 'export' && (
           <div className="flex gap-3">
             <a
@@ -722,6 +726,250 @@ export default function AdminPage() {
         )}
       </div>
     </div>
+  );
+}
+
+// ── Vista de búsqueda unificada de desaparecidos ──────────────────────────
+
+type ExternalPerson = {
+  id: string;
+  full_name: string;
+  document_id: string | null;
+  age: number | null;
+  status: string;
+  location: string | null;
+  facility: string | null;
+  notes: string | null;
+  source_name: string;
+  source_url: string | null;
+  external_id: string;
+  ingested_at: string;
+  updated_at: string;
+};
+
+type ExternalStats = {
+  total: number;
+  byStatus: { status: string; count: string }[];
+  sources: { name: string; record_count: number; last_sync_at: string | null }[];
+};
+
+const STATUS_COLORS: Record<string, string> = {
+  desaparecido: 'bg-red-100 text-red-700',
+  localizado: 'bg-green-100 text-green-700',
+  hospitalizado: 'bg-amber-100 text-amber-700',
+  fallecido: 'bg-gray-200 text-gray-700',
+  desconocido: 'bg-blue-100 text-blue-700',
+};
+
+function MissingPersonsView({
+  token,
+  apiAdmin,
+}: {
+  token: string;
+  apiAdmin: (path: string, token: string, init?: RequestInit) => Promise<unknown>;
+}) {
+  const [q, setQ] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [results, setResults] = useState<ExternalPerson[]>([]);
+  const [total, setTotal] = useState(0);
+  const [stats, setStats] = useState<ExternalStats | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [ingesting, setIngesting] = useState(false);
+  const [ingestResult, setIngestResult] = useState<string | null>(null);
+  const [selected, setSelected] = useState<ExternalPerson | null>(null);
+
+  // Cargar stats al montar
+  useEffect(() => {
+    apiAdmin('/api/external/stats', token)
+      .then((d) => setStats(d as ExternalStats))
+      .catch(() => {});
+  }, []);
+
+  async function handleSearch() {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (q) params.set('q', q);
+      if (statusFilter) params.set('status', statusFilter);
+      params.set('limit', '100');
+      const data = (await apiAdmin(`/api/external/search?${params.toString()}`, token)) as {
+        rows: ExternalPerson[];
+        total: number;
+      };
+      setResults(data.rows);
+      setTotal(data.total);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleIngest() {
+    setIngesting(true);
+    setIngestResult(null);
+    try {
+      const data = (await apiAdmin('/api/external/ingest', token, {
+        method: 'POST',
+      })) as { sources: { name: string; inserted: number }[]; total: number };
+      setIngestResult(`Sincronizadas ${data.total} personas de ${data.sources.length} fuentes.`);
+      // Recargar stats
+      apiAdmin('/api/external/stats', token)
+        .then((d) => setStats(d as ExternalStats))
+        .catch(() => {});
+    } catch {
+      setIngestResult('Error al sincronizar');
+    } finally {
+      setIngesting(false);
+    }
+  }
+
+  const allStatuses = stats?.byStatus.map((s) => s.status) ?? [];
+
+  return (
+    <>
+      {/* Stats header */}
+      {stats && (
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm text-center">
+            <p className="text-2xl font-bold">{stats.total}</p>
+            <p className="text-xs text-gray-500">Registros unificados</p>
+          </div>
+          {stats.byStatus.map((s) => (
+            <div
+              key={s.status}
+              className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm text-center"
+            >
+              <p className="text-lg font-bold">{s.count}</p>
+              <p className="text-xs text-gray-500 capitalize">{s.status}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Fuentes */}
+      {stats && stats.sources.length > 0 && (
+        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+          <h3 className="mb-2 font-bold text-sm text-gray-500 uppercase tracking-wider">Fuentes</h3>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+            {stats.sources.map((s) => (
+              <div key={s.name} className="rounded-lg bg-gray-50 px-3 py-2 text-xs">
+                <span className="font-medium text-gray-700">{s.name}</span>
+                <span className="ml-2 text-gray-400">{s.record_count} registros</span>
+                {s.last_sync_at && (
+                  <span className="ml-2 text-gray-400">
+                    · {new Date(s.last_sync_at).toLocaleDateString()}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Búsqueda */}
+      <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="flex items-end gap-3">
+          <div className="flex-1">
+            <label className="mb-1 block text-xs text-gray-500">Buscar por nombre o cédula</label>
+            <input
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
+              placeholder="Ej: Martínez Camargo"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs text-gray-500">Estado</label>
+            <select
+              className="rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="">Todos</option>
+              {allStatuses.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button
+            onClick={handleSearch}
+            disabled={loading}
+            className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-800 transition-colors disabled:opacity-50"
+          >
+            {loading ? 'Buscando...' : 'Buscar'}
+          </button>
+        </div>
+      </div>
+
+      {/* Resultados */}
+      {results.length > 0 && (
+        <p className="text-sm text-gray-500">
+          {total} resultado{total !== 1 ? 's' : ''}
+        </p>
+      )}
+
+      <div className="space-y-2">
+        {results.map((p) => (
+          <div
+            key={p.id}
+            className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => setSelected(selected?.id === p.id ? null : p)}
+          >
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <p className="font-semibold text-sm">{p.full_name}</p>
+                <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-500">
+                  {p.document_id && <span>🪪 {p.document_id}</span>}
+                  {p.age != null && <span>🎂 {p.age} años</span>}
+                  {p.location && <span>📍 {p.location}</span>}
+                </div>
+              </div>
+              <span
+                className={`rounded px-2 py-0.5 text-[10px] font-medium ${STATUS_COLORS[p.status] ?? 'bg-gray-100 text-gray-500'}`}
+              >
+                {p.status}
+              </span>
+            </div>
+            {selected?.id === p.id && (
+              <div className="mt-3 space-y-1 border-t border-gray-100 pt-3 text-xs text-gray-500">
+                {p.facility && <p>🏥 {p.facility}</p>}
+                {p.notes && <p>📝 {p.notes}</p>}
+                <p className="text-gray-400">Fuente: {p.source_name}</p>
+                {p.source_url && (
+                  <a
+                    href={p.source_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline"
+                  >
+                    Ver original ↗
+                  </a>
+                )}
+              </div>
+            )}
+          </div>
+        ))}
+        {results.length === 0 && !loading && (
+          <p className="text-center text-sm text-gray-400 py-8">
+            Buscá por nombre o cédula para ver resultados.
+          </p>
+        )}
+      </div>
+
+      {/* Ingesta */}
+      <div className="flex items-center gap-3">
+        <button
+          onClick={handleIngest}
+          disabled={ingesting}
+          className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+        >
+          {ingesting ? 'Sincronizando...' : '🔄 Sincronizar fuentes externas'}
+        </button>
+        {ingestResult && <span className="text-xs text-gray-500">{ingestResult}</span>}
+      </div>
+    </>
   );
 }
 

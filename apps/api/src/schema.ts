@@ -123,4 +123,58 @@ CREATE TABLE IF NOT EXISTS audit_log (
   detail     JSONB,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Fuentes externas de datos (APIs de desaparecidos)
+CREATE TABLE IF NOT EXISTS external_sources (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name          TEXT NOT NULL UNIQUE,
+  base_url      TEXT NOT NULL,
+  enabled       BOOLEAN NOT NULL DEFAULT true,
+  last_sync_at  TIMESTAMPTZ,
+  record_count  INTEGER NOT NULL DEFAULT 0,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Registros unificados de personas desaparecidas / localizadas
+CREATE TABLE IF NOT EXISTS external_persons (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  full_name     TEXT NOT NULL,
+  document_id   TEXT,
+  age           INTEGER,
+  status        TEXT NOT NULL DEFAULT 'desconocido',
+  location      TEXT,
+  facility      TEXT,
+  notes         TEXT,
+  source_id     UUID NOT NULL REFERENCES external_sources(id) ON DELETE CASCADE,
+  source_url    TEXT,
+  external_id   TEXT NOT NULL,
+  ingested_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE(source_id, external_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_ext_persons_name  ON external_persons(full_name);
+CREATE INDEX IF NOT EXISTS idx_ext_persons_doc   ON external_persons(document_id);
+CREATE INDEX IF NOT EXISTS idx_ext_persons_st    ON external_persons(status);
+
+-- Full-text search en español para búsqueda escalable (GIN index)
+ALTER TABLE external_persons ADD COLUMN IF NOT EXISTS search_vector TSVECTOR
+  GENERATED ALWAYS AS (
+    to_tsvector('spanish', coalesce(full_name,'') || ' ' || coalesce(document_id,''))
+  ) STORED;
+CREATE INDEX IF NOT EXISTS idx_ext_persons_search ON external_persons USING GIN(search_vector);
+
+-- Inventario de suministros por organización
+CREATE TABLE IF NOT EXISTS org_inventory (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  item_name       TEXT NOT NULL,
+  category        TEXT NOT NULL DEFAULT 'general',
+  quantity        INTEGER NOT NULL DEFAULT 0,
+  unit            TEXT NOT NULL DEFAULT 'u',
+  notes           TEXT,
+  updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_org_inv_org ON org_inventory(organization_id);
 `;

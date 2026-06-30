@@ -89,6 +89,21 @@ export default function OrganigramaView({
   const [activeCategory, setActiveCategory] = useState('todas');
   const [modalOpen, setModalOpen] = useState<'org' | 'vol' | null>(null);
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
+  const [invOpen, setInvOpen] = useState<string | null>(null);
+  const [invData, setInvData] = useState<
+    Record<
+      string,
+      {
+        id: string;
+        item_name: string;
+        category: string;
+        quantity: number;
+        unit: string;
+        notes: string | null;
+      }[]
+    >
+  >({});
+  const [invForm, setInvForm] = useState<Record<string, Record<string, unknown>>>({});
 
   // Org form state
   const [orgForm, setOrgForm] = useState({
@@ -162,6 +177,48 @@ export default function OrganigramaView({
   }, [orgs]);
 
   const sortedCategories = ['gobierno', 'ong', 'privado', 'comunitario', 'religioso'];
+
+  async function toggleInv(orgId: string) {
+    if (invOpen === orgId) {
+      setInvOpen(null);
+      return;
+    }
+    setInvOpen(orgId);
+    if (!invData[orgId]) {
+      try {
+        const rows = (await adminFetch(`/api/admin/orgs/${orgId}/inventory`, token)) as {
+          id: string;
+          item_name: string;
+          category: string;
+          quantity: number;
+          unit: string;
+          notes: string | null;
+        }[];
+        setInvData((p) => ({ ...p, [orgId]: rows }));
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+
+  async function addInvItem(orgId: string) {
+    const form = (invForm[orgId] ?? {}) as Record<string, unknown>;
+    if (!form.item_name) return;
+    await adminFetch(`/api/admin/orgs/${orgId}/inventory`, token, {
+      method: 'POST',
+      body: JSON.stringify(form),
+    });
+    setInvForm((p) => ({ ...p, [orgId]: {} }));
+    const rows = (await adminFetch(`/api/admin/orgs/${orgId}/inventory`, token)) as any[];
+    setInvData((p) => ({ ...p, [orgId]: rows }));
+  }
+
+  async function delInvItem(itemId: string, orgId: string) {
+    if (!confirm('¿Eliminar este item?')) return;
+    await adminFetch(`/api/admin/inventory/${itemId}`, token, { method: 'DELETE' });
+    const rows = (await adminFetch(`/api/admin/orgs/${orgId}/inventory`, token)) as any[];
+    setInvData((p) => ({ ...p, [orgId]: rows }));
+  }
 
   // Delete org
   async function deleteOrg(id: string, name: string) {
@@ -322,6 +379,14 @@ export default function OrganigramaView({
                                   )}
                                 </div>
                               )}
+                              {roleLevel >= 1 && (
+                                <button
+                                  onClick={() => toggleInv(org.id)}
+                                  className="mt-1.5 flex items-center gap-1 text-[10px] text-muted hover:text-ink transition"
+                                >
+                                  📦 {invOpen === org.id ? 'Ocultar inventario' : 'Ver inventario'}
+                                </button>
+                              )}
                             </div>
                             {/* 3-dot menu */}
                             <div className="relative shrink-0">
@@ -367,6 +432,82 @@ export default function OrganigramaView({
                               )}
                             </div>
                           </div>
+                          {/* Inventario expandible */}
+                          {invOpen === org.id && (
+                            <div className="mt-3 border-t border-line pt-3">
+                              <p className="mb-2 text-[11px] font-semibold text-muted uppercase tracking-wider">
+                                📦 Inventario
+                              </p>
+                              {(invData[org.id] ?? []).length === 0 && (
+                                <p className="text-[11px] text-muted/60 mb-2">
+                                  Sin items registrados.
+                                </p>
+                              )}
+                              {(invData[org.id] ?? []).map((item) => (
+                                <div
+                                  key={item.id}
+                                  className="flex items-center gap-2 rounded-lg bg-paper px-2.5 py-1.5 mb-1"
+                                >
+                                  <span className="flex-1 text-xs text-ink">{item.item_name}</span>
+                                  <span className="text-[10px] text-muted tabular-nums">
+                                    {item.quantity} {item.unit}
+                                  </span>
+                                  <span className="text-[10px] text-muted">{item.category}</span>
+                                  <button
+                                    onClick={() => delInvItem(item.id, org.id)}
+                                    className="text-[10px] text-muted hover:text-coralInk transition"
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
+                              ))}
+                              <div className="mt-2 flex gap-1.5">
+                                <input
+                                  className="flex-1 rounded-lg border border-line bg-paper px-2 py-1 text-[11px] outline-none focus:border-coral"
+                                  placeholder="Item"
+                                  value={(invForm[org.id]?.item_name as string) ?? ''}
+                                  onChange={(e) =>
+                                    setInvForm((p) => ({
+                                      ...p,
+                                      [org.id]: { ...(p[org.id] ?? {}), item_name: e.target.value },
+                                    }))
+                                  }
+                                />
+                                <input
+                                  className="w-16 rounded-lg border border-line bg-paper px-2 py-1 text-[11px] outline-none focus:border-coral"
+                                  placeholder="Cant"
+                                  type="number"
+                                  value={(invForm[org.id]?.quantity as string) ?? ''}
+                                  onChange={(e) =>
+                                    setInvForm((p) => ({
+                                      ...p,
+                                      [org.id]: {
+                                        ...(p[org.id] ?? {}),
+                                        quantity: parseInt(e.target.value) || 0,
+                                      },
+                                    }))
+                                  }
+                                />
+                                <input
+                                  className="w-12 rounded-lg border border-line bg-paper px-2 py-1 text-[11px] outline-none focus:border-coral"
+                                  placeholder="Ud."
+                                  value={(invForm[org.id]?.unit as string) ?? 'u'}
+                                  onChange={(e) =>
+                                    setInvForm((p) => ({
+                                      ...p,
+                                      [org.id]: { ...(p[org.id] ?? {}), unit: e.target.value },
+                                    }))
+                                  }
+                                />
+                                <button
+                                  onClick={() => addInvItem(org.id)}
+                                  className="rounded-lg bg-coral px-2.5 py-1 text-[11px] font-semibold text-white hover:brightness-110 transition"
+                                >
+                                  +
+                                </button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       );
                     })}

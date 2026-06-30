@@ -72,6 +72,24 @@ export const config = {
     return 'none';
   },
 
+  // Pool de conexiones (defaults conservadores para free tier)
+  dbPoolMax: Number(process.env.DB_POOL_MAX ?? '10'),
+  dbPoolIdle: Number(process.env.DB_POOL_IDLE ?? '30000'),
+
+  // Redis opcional — si se configura, se usa para sesiones + caché.
+  // Si no, todo funciona en memoria (free tier).
+  redisUrl: env('REDIS_URL', ''),
+
+  // Rate limiting global
+  rateLimitMax: Number(process.env.RATE_LIMIT_MAX ?? '100'),
+  rateLimitWindow: env('RATE_LIMIT_WINDOW', '1 minute'),
+  // Rate limiting específico para login (más restrictivo)
+  rateLimitLoginMax: Number(process.env.RATE_LIMIT_LOGIN_MAX ?? '5'),
+  rateLimitLoginWindow: env('RATE_LIMIT_LOGIN_WINDOW', '1 minute'),
+
+  // Ingesta automática de fuentes externas (minutos, 0 = desactivado)
+  ingestIntervalMin: Number(process.env.INGEST_INTERVAL_MIN ?? '0'),
+
   /**
    * Modo efectivo de WhatsApp. "generic" si hay WHATSAPP_API_KEY configurada,
    * de lo contrario "mock".
