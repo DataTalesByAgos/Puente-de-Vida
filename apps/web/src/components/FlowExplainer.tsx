@@ -1,6 +1,3 @@
-// Explicación visual del flujo y los roles. Server component (sin estado):
-// no agrega JavaScript al cliente, en línea con el enfoque liviano.
-
 const STEPS = [
   {
     n: 1,
@@ -8,74 +5,50 @@ const STEPS = [
     actor: 'Ciudadano',
     title: 'Reporta por WhatsApp',
     desc: 'Escribe un mensaje normal: "edificio derrumbado, hay gente atrapada". Sin apps ni cuentas.',
-    accent: 'bg-wa/12 text-waInk border-wa/30',
   },
   {
     n: 2,
     icon: '🤖',
-    actor: 'Inteligencia Artificial',
-    title: 'Estructura y prioriza',
-    desc: 'La IA detecta el tipo de incidente, la prioridad, la ubicación y agrupa reportes por zona en eventos en cadena.',
-    accent: 'bg-amber/15 text-amberInk border-amber/40',
+    actor: 'Bot de IA',
+    title: 'Clasifica y estructura',
+    desc: 'El bot responde al instante y la IA clasifica el tipo, la prioridad y extrae ubicación.',
   },
   {
     n: 3,
     icon: '🧭',
     actor: 'Coordinador',
-    title: 'Decide y guía',
-    desc: 'Ve todo ordenado por urgencia en el Panel y coordina eventos con el equipo correcto.',
-    accent: 'bg-coral/10 text-coralInk border-coral/30',
+    title: 'Prioriza y asigna',
+    desc: 'Los reportes se ordenan por urgencia en el panel del coordinador. Un vistazo ve todo.',
   },
   {
     n: 4,
-    icon: '📱',
+    icon: '🚑',
     actor: 'Voluntario',
-    title: 'Atiende en terreno',
-    desc: 'Usa la app aunque no haya señal: todo se guarda y se sincroniza solo al volver Internet.',
-    accent: 'bg-sky/12 text-skyInk border-sky/30',
+    title: 'Responde en terreno',
+    desc: 'Los equipos reciben la asignación y actualizan el estado desde su dispositivo, incluso sin Internet.',
   },
 ];
 
 export function FlowExplainer() {
   return (
-    <section className="card-flat">
-      <div className="mb-3 flex items-center gap-2">
-        <h2 className="font-display text-sm font-bold">¿Cómo funciona?</h2>
-        <span className="text-xs text-muted">De un mensaje suelto a una decisión rápida</span>
-      </div>
-
-      <ol className="grid gap-3 md:grid-cols-4">
+    <section className="overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
+      <div className="grid grid-cols-1 gap-0 sm:grid-cols-2 lg:grid-cols-4">
         {STEPS.map((s, i) => (
-          <li key={s.n} className="relative">
-            <div className={`flex h-full flex-col gap-1.5 rounded-xl border p-3 ${s.accent}`}>
-              <div className="flex items-center justify-between">
-                <span className="text-2xl" aria-hidden>
-                  {s.icon}
-                </span>
-                <span className="font-display text-xs font-bold opacity-70">PASO {s.n}</span>
-              </div>
-              <p className="text-xs font-semibold uppercase tracking-wide opacity-80">{s.actor}</p>
-              <p className="font-display text-sm font-bold leading-tight text-ink">{s.title}</p>
-              <p className="text-xs leading-relaxed text-muted">{s.desc}</p>
-            </div>
-            {i < STEPS.length - 1 && (
-              <span
-                className="absolute -right-2.5 top-1/2 z-10 hidden -translate-y-1/2 text-lg text-muted md:block"
-                aria-hidden
-              >
-                →
-              </span>
-            )}
-          </li>
+          <div
+            key={s.n}
+            className={`relative flex flex-col gap-2 p-4 ${
+              i < STEPS.length - 1 ? 'border-b border-line sm:border-b-0 sm:border-r' : ''
+            }`}
+          >
+            <span className="label-mono text-[0.6rem] text-muted">
+              {s.n}. {s.actor}
+            </span>
+            <span className="text-2xl">{s.icon}</span>
+            <h3 className="font-display text-sm font-bold">{s.title}</h3>
+            <p className="text-xs leading-relaxed text-muted">{s.desc}</p>
+          </div>
         ))}
-      </ol>
-
-      <p className="mt-3 text-xs leading-relaxed text-muted">
-        <strong className="text-ink">¿Por dónde entran los reportes?</strong> Por los dos lados a la
-        vez: el ciudadano escribe por <span className="text-waInk">WhatsApp</span> y el voluntario
-        carga desde la <span className="text-skyInk">app</span>. Todo cae en el mismo lugar, se
-        ordena por hora de llegada y la IA lo reclasifica por urgencia.
-      </p>
+      </div>
     </section>
   );
 }

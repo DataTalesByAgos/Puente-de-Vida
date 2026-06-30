@@ -1,19 +1,10 @@
-'use client';
-
-import dynamic from 'next/dynamic';
-import { useMemo } from 'react';
+import { lazy, Suspense, useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
 import { PRIORITY_LABELS, type LocalReport } from '@/lib/types';
 import { PRIORITY_COLOR } from '@/lib/format';
 
-// Leaflet manipula el DOM: solo en el cliente (sin SSR).
-const MapView = dynamic(() => import('@/components/MapView'), {
-  ssr: false,
-  loading: () => (
-    <div className="flex h-full items-center justify-center text-muted">Cargando mapa…</div>
-  ),
-});
+const MapView = lazy(() => import('@/components/MapView'));
 
 export default function MapaPage() {
   const reports = useLiveQuery(() => db.reports.toArray(), [], [] as LocalReport[]);
@@ -36,7 +27,9 @@ export default function MapaPage() {
       </div>
 
       <div className="h-[65vh] overflow-hidden rounded-xl border border-line shadow-card">
-        <MapView reports={points} />
+        <Suspense fallback={<div className="flex h-full items-center justify-center text-muted">Cargando mapa…</div>}>
+          <MapView reports={points} />
+        </Suspense>
       </div>
 
       <div className="flex flex-wrap gap-3 text-xs text-muted">

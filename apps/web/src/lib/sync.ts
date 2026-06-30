@@ -41,7 +41,7 @@ export async function createLocalReport(input: NewReportInput): Promise<LocalRep
     peopleAffected: null,
     confidence: 0.4,
     recommendedTeam: null,
-    reporterName: input.reporterName,
+    reporterName: input.reporterName || 'Anónimo',
     reporterPhone: null,
     photoDataUrl: input.photoDataUrl,
     duplicateOf: null,

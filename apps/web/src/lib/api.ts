@@ -1,6 +1,6 @@
 import type { IncidentType, Priority, ServerReport, Source, Status } from './types';
 
-export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+export const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000';
 
 async function http<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_URL}${path}`, {

@@ -250,7 +250,7 @@ export async function ingestReport(input: IngestInput): Promise<Report> {
       cls.peopleAffected,
       cls.confidence,
       cls.recommendedTeam,
-      input.reporterName ?? null,
+      (input.reporterName ?? input.source === 'pwa') ? (input.reporterName || 'Anónimo') : null,
       input.reporterPhone ?? null,
       input.photoUrl ?? null,
       cls.engine,

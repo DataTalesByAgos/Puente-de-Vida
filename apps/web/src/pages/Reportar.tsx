@@ -1,5 +1,3 @@
-'use client';
-
 import { useMemo, useState } from 'react';
 import { useApp } from '@/components/AppProvider';
 import { createLocalReport } from '@/lib/sync';
@@ -58,7 +56,7 @@ export default function ReportarPage() {
         lat: coords?.lat ?? null,
         lng: coords?.lng ?? null,
         locationText: null,
-        reporterName: name.trim() || null,
+        reporterName: name.trim() || 'Anónimo',
         photoDataUrl: photo,
       });
       setDone(true);
@@ -151,7 +149,6 @@ export default function ReportarPage() {
             />
           </label>
           {photo ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img src={photo} alt="adjunto" className="h-20 w-full rounded-lg object-cover" />
           ) : (
             <p className="text-xs text-muted">Se guarda en el dispositivo.</p>

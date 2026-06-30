@@ -23,16 +23,11 @@
     "down": "docker compose down"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3.3.5",
-    "@next/eslint-plugin-next": "^16.2.9",
     "@typescript-eslint/eslint-plugin": "^8.62.0",
     "@typescript-eslint/parser": "^8.62.0",
     "concurrently": "^9.1.0",
     "eslint": "^9.39.4",
-    "eslint-config-next": "^16.2.9",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^7.1.1",
     "prettier": "^3.8.5"
   },
   "engines": {

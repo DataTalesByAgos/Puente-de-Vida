@@ -1,7 +1,5 @@
-'use client';
-
 import { useEffect, useMemo, useRef, useState } from 'react';
-import Link from 'next/link';
+import { Link } from '@tanstack/react-router';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/db';
@@ -149,6 +147,10 @@ export default function DashboardPage() {
     };
   }, [reports, active]);
 
+  const [selectedReport, setSelectedReport] = useState<LocalReport | null>(null);
+  const [compTab, setCompTab] = useState<CompletenessLevel | 'todos'>('todos');
+  const [typeFilter, setTypeFilter] = useState<IncidentType | null>(null);
+
   const feed = useMemo(() => {
     const order = { critica: 0, alta: 1, media: 2, baja: 3 } as const;
     return [...active].sort((a, b) => {
@@ -166,10 +168,6 @@ export default function DashboardPage() {
     if (typeFilter) f = f.filter((r) => r.incidentType === typeFilter);
     return f;
   }, [feed, compTab, typeFilter]);
-
-  const [selectedReport, setSelectedReport] = useState<LocalReport | null>(null);
-  const [compTab, setCompTab] = useState<CompletenessLevel | 'todos'>('todos');
-  const [typeFilter, setTypeFilter] = useState<IncidentType | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -193,7 +191,6 @@ export default function DashboardPage() {
       <section className="overflow-hidden rounded-2xl border border-line bg-surface shadow-card">
         <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-start gap-3">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/brand/v-mark.svg" alt="" className="h-12 w-12" />
             <div>
               <h1 className="font-display text-xl font-black tracking-tight sm:text-2xl">
@@ -209,14 +206,11 @@ export default function DashboardPage() {
             </div>
           </div>
           <div className="flex shrink-0 gap-2">
-            <Link href="/whatsapp" className="btn-ghost text-sm">
+            <Link to="/whatsapp" className="btn-ghost text-sm">
               💬 Ver WhatsApp
             </Link>
-            <Link href="/reportar" className="btn-primary text-sm">
+            <Link to="/reportar" className="btn-primary text-sm">
               ➕ Reportar
-            </Link>
-            <Link href="/admin" className="grid h-9 w-9 place-items-center rounded-lg border border-line bg-paper text-muted hover:bg-line hover:text-ink transition-all" title="Admin">
-              ⚙️
             </Link>
           </div>
         </div>
@@ -314,7 +308,7 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* Modal de detalle — selección estable sin que el feed se mueva */}
+      {/* Modal de detalle */}
       <AnimatePresence>
         {selectedReport && <ReportModal report={selectedReport} onClose={() => setSelectedReport(null)} modalRef={modalRef} />}
       </AnimatePresence>

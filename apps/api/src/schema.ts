@@ -50,6 +50,19 @@ CREATE TABLE IF NOT EXISTS shelters (
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS organizations (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name          TEXT NOT NULL,
+  category      TEXT NOT NULL DEFAULT 'comunitario',
+  description   TEXT,
+  contact_name  TEXT,
+  contact_phone TEXT,
+  location      TEXT,
+  parent_id     UUID REFERENCES organizations(id) ON DELETE SET NULL,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE organizations ADD COLUMN IF NOT EXISTS location TEXT;
+
 CREATE TABLE IF NOT EXISTS volunteers (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name            TEXT NOT NULL,
@@ -65,17 +78,6 @@ CREATE TABLE IF NOT EXISTS volunteers (
   lng             DOUBLE PRECISION,
   last_seen       TIMESTAMPTZ NOT NULL DEFAULT now(),
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
-);
-
-CREATE TABLE IF NOT EXISTS organizations (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name          TEXT NOT NULL,
-  category      TEXT NOT NULL DEFAULT 'comunitario',
-  description   TEXT,
-  contact_name  TEXT,
-  contact_phone TEXT,
-  parent_id     UUID REFERENCES organizations(id) ON DELETE SET NULL,
-  created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS supplies (

@@ -1,28 +1,16 @@
 # syntax=docker/dockerfile:1
-# PWA Next.js en modo standalone (imagen final liviana).
-# Contexto de build = raíz del repo.
-
-FROM node:20-alpine AS deps
-WORKDIR /app
-COPY apps/web/package.json ./package.json
-RUN npm install --no-audit --no-fund
+# PWA con Vite + estáticos (imagen NGINX liviana).
 
 FROM node:20-alpine AS build
 WORKDIR /app
-ENV NEXT_TELEMETRY_DISABLED=1
-ARG NEXT_PUBLIC_API_URL=http://localhost:4000
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-COPY --from=deps /app/node_modules ./node_modules
+ARG VITE_API_URL=http://localhost:4000
+ENV VITE_API_URL=$VITE_API_URL
+COPY apps/web/package.json ./
+RUN npm install --no-audit --no-fund
 COPY apps/web ./
 RUN npm run build
 
-FROM node:20-alpine AS runtime
-WORKDIR /app
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV PORT=3000
-COPY --from=build /app/public ./public
-COPY --from=build /app/.next/standalone ./
-COPY --from=build /app/.next/static ./.next/static
-EXPOSE 3000
-CMD ["node", "server.js"]
+FROM nginx:stable-alpine AS runtime
+COPY --from=build /app/dist /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
