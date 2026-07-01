@@ -60,13 +60,13 @@ export function createApiClient(config: ApiConfig) {
   return {
     // Auth
     login: (user: string, pass: string) =>
-      http<{ token: string; role: string; username: string }>('/api/auth/login', {
+      http<{ token: string; role: string; username: string }>('/api/admin/login', {
         method: 'POST',
         body: JSON.stringify({ user, pass }),
       }),
 
     register: (data: Record<string, unknown>) =>
-      http<{ id: string; role: string }>('/api/auth/register', {
+      http<{ id: string; role: string }>('/api/admin/register', {
         method: 'POST',
         body: JSON.stringify(data),
       }),

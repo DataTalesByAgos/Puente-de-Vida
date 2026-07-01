@@ -204,4 +204,83 @@ CREATE INDEX IF NOT EXISTS idx_org_invite_code ON organizations(invite_code);
 ALTER TABLE users ADD COLUMN IF NOT EXISTS document_id TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS verified BOOLEAN DEFAULT FALSE;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS organization_id UUID REFERENCES organizations(id) ON DELETE SET NULL;
+ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check;
+ALTER TABLE users ADD CONSTRAINT users_role_check CHECK (role IN ('viewer', 'operator', 'admin', 'citizen', 'volunteer', 'coordinator', 'organization'));
+ALTER TABLE users ADD COLUMN IF NOT EXISTS email TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS phone TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS birth_date TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS state TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS municipality TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS address TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS occupation TEXT;
+
+-- ====================================================================
+-- NUEVO MODELO: Necesidades (reemplaza conceptualmente a reports)
+-- ====================================================================
+
+CREATE TABLE IF NOT EXISTS needs (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  client_id        TEXT UNIQUE,
+  title            TEXT NOT NULL,
+  description      TEXT NOT NULL,
+  category         TEXT NOT NULL,
+  subcategory      TEXT,
+  priority         TEXT NOT NULL DEFAULT 'media',
+  status           TEXT NOT NULL DEFAULT 'abierta',
+  scope            TEXT NOT NULL DEFAULT 'micro',
+  parent_id        UUID REFERENCES needs(id) ON DELETE SET NULL,
+  lat              DOUBLE PRECISION,
+  lng              DOUBLE PRECISION,
+  location_text    TEXT,
+  organization_id  UUID REFERENCES organizations(id) ON DELETE SET NULL,
+  people_required  INTEGER,
+  resources_needed TEXT,
+  comments         TEXT,
+  created_by       TEXT,
+  created_by_role  TEXT,
+  assigned_to      TEXT,
+  assigned_by      TEXT,
+  assigned_at      TIMESTAMPTZ,
+  closed_by        TEXT,
+  closed_at        TIMESTAMPTZ,
+  source           TEXT NOT NULL DEFAULT 'pwa',
+  photo_url        TEXT,
+  age              INTEGER,
+  is_minor         BOOLEAN,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at       TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_needs_status      ON needs(status);
+CREATE INDEX IF NOT EXISTS idx_needs_category    ON needs(category);
+CREATE INDEX IF NOT EXISTS idx_needs_priority    ON needs(priority);
+CREATE INDEX IF NOT EXISTS idx_needs_scope       ON needs(scope);
+CREATE INDEX IF NOT EXISTS idx_needs_parent      ON needs(parent_id);
+CREATE INDEX IF NOT EXISTS idx_needs_org         ON needs(organization_id);
+CREATE INDEX IF NOT EXISTS idx_needs_assigned    ON needs(assigned_to);
+CREATE INDEX IF NOT EXISTS idx_needs_updated     ON needs(updated_at);
+
+CREATE TABLE IF NOT EXISTS need_updates (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  need_id         UUID NOT NULL REFERENCES needs(id) ON DELETE CASCADE,
+  volunteer_id    TEXT NOT NULL,
+  status          TEXT NOT NULL,
+  photos          TEXT[] DEFAULT '{}',
+  observations    TEXT,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_nu_need ON need_updates(need_id);
+
+CREATE TABLE IF NOT EXISTS volunteer_profiles (
+  user_id             TEXT PRIMARY KEY,
+  categories_of_interest TEXT[] DEFAULT '{}',
+  skills              TEXT[] DEFAULT '{}',
+  availability        TEXT NOT NULL DEFAULT 'programada',
+  geo_zone            TEXT,
+  lat                 DOUBLE PRECISION,
+  lng                 DOUBLE PRECISION,
+  max_distance_km     INTEGER DEFAULT 50,
+  updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 `;

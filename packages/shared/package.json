@@ -14,8 +14,9 @@
     }
   },
   "scripts": {
-    "build": "tsup src/index.ts --format esm,cjs --dts",
-    "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
+    "build": "tsup src/index.ts --format esm,cjs",
+    "dts": "tsc -p tsconfig.json --emitDeclarationOnly --outDir dist",
+    "dev": "tsup src/index.ts --format esm,cjs --watch",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

@@ -1,5 +1,6 @@
 import { Stack } from 'expo-router';
 import { AuthProvider, useAuth } from '@/providers/AuthProvider';
+import { NeedProvider } from '@/providers/NeedProvider';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
 
 function RootNavigator() {
@@ -13,32 +14,40 @@ function RootNavigator() {
     );
   }
 
-  if (!isAuthenticated) {
-    return (
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="index" />
-        <Stack.Screen name="login" />
-        <Stack.Screen name="info" />
-        <Stack.Screen name="register" />
-      </Stack>
-    );
-  }
-
-  return (
-    <Stack screenOptions={{ headerShown: false }}>
-      {role === 'citizen' && <Stack.Screen name="(citizen)" />}
-      {role === 'volunteer' && <Stack.Screen name="(volunteer)" />}
-      {role === 'coordinator' && <Stack.Screen name="(coordinator)" />}
-      {role === 'organization' && <Stack.Screen name="(organization)" />}
-      {role === 'admin' && <Stack.Screen name="(admin)" />}
-    </Stack>
+  const screens = !isAuthenticated ? (
+    <>
+      <Stack.Screen name="index" />
+      <Stack.Screen name="login" />
+      <Stack.Screen name="info" />
+      <Stack.Screen name="register" />
+    </>
+  ) : (
+    (() => {
+      const roleGroup =
+        role === 'citizen'
+          ? '(citizen)'
+          : role === 'volunteer'
+            ? '(volunteer)'
+            : role === 'coordinator'
+              ? '(coordinator)'
+              : role === 'organization'
+                ? '(organization)'
+                : role === 'admin'
+                  ? '(admin)'
+                  : null;
+      return roleGroup ? <Stack.Screen name={roleGroup} /> : <Stack.Screen name="index" />;
+    })()
   );
+
+  return <Stack screenOptions={{ headerShown: false }}>{screens}</Stack>;
 }
 
 export default function Layout() {
   return (
     <AuthProvider>
-      <RootNavigator />
+      <NeedProvider>
+        <RootNavigator />
+      </NeedProvider>
     </AuthProvider>
   );
 }

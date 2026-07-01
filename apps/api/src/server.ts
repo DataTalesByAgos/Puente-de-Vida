@@ -12,6 +12,9 @@ import { whatsappRoutes } from './routes/whatsapp';
 import { adminRoutes } from './routes/admin';
 import { orgRoutes } from './routes/orgs';
 import { externalRoutes } from './routes/external';
+import { needsRoutes } from './routes/needs';
+import { volunteerRoutes } from './routes/volunteer';
+import { infoRoutes } from './routes/info';
 import { runIngestion } from './services/ingestion';
 
 export async function buildServer() {
@@ -51,6 +54,9 @@ export async function buildServer() {
   await app.register(adminRoutes);
   await app.register(orgRoutes);
   await app.register(externalRoutes);
+  await app.register(needsRoutes);
+  await app.register(volunteerRoutes);
+  await app.register(infoRoutes);
 
   return app;
 }
