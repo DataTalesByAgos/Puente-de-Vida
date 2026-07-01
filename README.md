@@ -1,167 +1,99 @@
-# Puente de Vida — Coordinación de Emergencias
+# Puente de Vida — Red Colaborativa de Gestión de Necesidades
 
-**Puente de Vida** es una plataforma de coordinación de emergencias **offline-first** diseñada para que la información crítica de rescate y ayuda humanitaria continúe fluyendo incluso sin conexión a Internet.
+**Puente de Vida** es una plataforma colaborativa **mobile-first** donde personas, organizaciones y voluntarios publican, descubren y coordinan solicitudes de ayuda de manera organizada — incluso sin conexión a Internet.
 
-> **Ningún reporte debería perderse porque se cayó Internet.**
-
----
-
-## Diagrama de flujo
-
-```mermaid
-graph TB
-  subgraph Canales de entrada
-    WA[WhatsApp / SMS]
-    WEB[Formulario web PWA]
-    LLAMADA[Llamada telefónica]
-  end
-
-  subgraph App
-    IDB[(IndexedDB<br/>offline-first)]
-    SW[Service Worker<br/>background sync]
-  end
-
-  subgraph API
-    CL[Clasificador<br/>heurística + IA]
-    DP[Dedup / agrupación]
-    PG[(PostgreSQL)]
-  end
-
-  subgraph Admin
-    ORG[Organigrama<br/>orgs + voluntarios]
-    CONF[Configuración<br/>proveedores]
-    USR[Usuarios / roles]
-  end
-
-  subgraph Frontend
-    DASH[Panel coordinador]
-    MAPA[Mapa de incidentes]
-    REP[Reportes]
-    CHAT[Chat ciudadano]
-  end
-
-  WA -->|webhook / simulación| CL
-  WEB --> IDB -->|sync cuando hay red| CL
-  LLAMADA -->|operador ingresa| WEB
-  CL --> DP --> PG
-  PG -->|pulled by SW| IDB
-  PG --> DASH & MAPA & REP & CHAT
-  ORG & CONF & USR --> PG
-```
+> **Ninguna necesidad debería quedar sin atención porque se cayó Internet.**
 
 ---
 
-📘 [**Documentación técnica**](docs/TECNICO.md) — arquitectura, clasificación offline, proveedores, API
-🧭 [**Roadmap**](ROADMAP.md) — mejoras planificadas y cómo aportar
+📘 [**Roadmap Mobile**](ROADMAP-MOBILE.md) — plan actual de desarrollo (mobile-first, necesidades)
+🧭 [**Roadmap anterior**](ROADMAP.md) — plan legacy de incidentes (en migración)
 
 ---
 
 ## 🚀 Características
 
-- **Offline-first:** IndexedDB local + Service Worker con background sync. Opera sin conexión y sincroniza al recuperar red.
-- **Clasificación híbrida:** Heurística local (baseline, sin costo) + proveedor de IA configurable (OpenAI-compatible).
-- **PWA liviana:** Vite + React + TanStack Router. Build estático, sin SSR, bundle mínimo.
-- **Panel de coordinación:** Reportes priorizados, filtros por tipo/urgencia/completitud, métricas en vivo.
-- **Mapa de incidentes:** Leaflet + OpenStreetMap con puntos coloreados por prioridad.
-- **Chat ciudadano:** Visualización pasiva de mensajes entrantes con respuestas automáticas del bot.
-- **Privacidad estricta:** Cifrado AES-256-GCM de datos sensibles en IndexedDB, httpOnly cookies para sesiones, cédulas siempre enmascaradas, protección automática de menores, filtrado de datos por rol (viewer/operator/admin).
-- **Registro y verificación:** Operadores se registran con código de invitación de su organización. Verificación opcional de cédula contra el CNE (gratuito, público, sin datos enviados a terceros).
-- **Admin completo:** Login con roles (viewer / operator / admin), rate limiting por IP (5 intentos/min en login), sesiones con expiración 24h, auditoría de cambios, estadísticas, export CSV/JSON, gestión de usuarios, configuración de proveedores, organigrama de organizaciones y voluntarios con mapa.
-- **WhatsApp conmutable:** Simulador emulado gratis por defecto. Conectar Meta/Kapso/360dialog solo requiere variables de entorno.
+- **Mobile-first:** App nativa Android (Expo/React Native) con experiencia adaptada por rol (Ciudadano, Voluntario, Coordinador, Organización, Admin).
+- **Necesidades como eje principal:** Publicá una necesidad (micro o macro), agrupalas, asigná voluntarios, seguí el progreso.
+- **Dos niveles:** Micro-necesidades (específicas, en terreno) y Macro-necesidades (campañas organizadas por coordinadores).
+- **Offline-first:** SQLite local con sync cuando hay conexión. Opera sin internet.
+- **Descubrimiento inteligente:** Voluntarios ven necesidades que matchean sus intereses y habilidades.
+- **Seguimiento automático:** Recordatorios para evitar necesidades abandonadas.
+- **Privacidad por niveles:** Cada rol ve solo la información que necesita.
+- **Registro con verificación:** 4 pasos con verificación de identidad según el rol.
+- **PWA web existente:** La versión web (Vite + React PWA) sigue operativa mientras migramos a mobile.
 
 ---
 
 ## 🛠️ Stack
 
-| Capa     | Tecnología                                           |
-| -------- | ---------------------------------------------------- |
-| Frontend | Vite + React 19 + TanStack Router + Tailwind         |
-| Backend  | Node.js + Fastify + TypeScript + @fastify/rate-limit |
-| DB       | PostgreSQL + Dexie.js (IndexedDB local)              |
-| Mapas    | Leaflet + OpenStreetMap                              |
-| PWA      | vite-plugin-pwa + Service Worker custom              |
-| IA       | Heurística local / OpenAI-compatible (conmutable)    |
-| WhatsApp | Simulador mock / proveedor genérico vía API          |
+| Capa      | Tecnología                                            |
+| --------- | ----------------------------------------------------- |
+| Mobile    | Expo SDK 52+ + React Native + Expo Router             |
+| Web (PWA) | Vite + React 19 + TanStack Router + Tailwind (legacy) |
+| Backend   | Node.js + Fastify + TypeScript + @fastify/rate-limit  |
+| DB        | PostgreSQL + expo-sqlite (local)                      |
+| Mapas     | Mapbox GL (offline)                                   |
+| IA        | Heurística local / OpenAI-compatible (conmutable)     |
+| WhatsApp  | Simulador mock / proveedor genérico vía API           |
+| Push      | Expo Push Notifications                               |
 
 ---
 
 ## 📁 Estructura
 
 ```
+├── packages/
+│   └── shared/      # @pdv/shared (tipos, schemas, constantes, api-client)
 ├── apps/
-│   ├── api/          # Fastify + PostgreSQL
-│   └── web/          # Vite + React PWA
-├── material-visual/  # Brand assets (logos, tipografía)
+│   ├── api/         # Fastify + PostgreSQL (needs routes + reports legacy)
+│   ├── web/         # Vite + React PWA (legacy, en migración)
+│   └── mobile/      # React Native Expo (target principal)
+├── material-visual/ # Brand assets (logos, tipografía)
 ├── docker-compose.yml
-└── package.json      # Monorepo npm workspaces
+└── package.json     # Monorepo npm workspaces
 ```
 
 ---
 
-## 💻 Inicio rápido
+## 💻 Inicio rápido (desarrollo actual)
 
-### Docker (recomendado)
+### Docker
 
 ```bash
 npm run up
 # Web: http://localhost:3000
 # API: http://localhost:4000
-
 npm run down  # detener
 ```
 
 ### Desarrollo local
 
 ```bash
-cp .env.example .env # crear configuración local
+cp .env.example .env
 npm run db:up        # PostgreSQL en Docker
 npm run dev          # API + Web con hot reload
 ```
 
----
-
-## 📋 Comandos útiles
+## 📋 Comandos
 
 ```bash
 npm run typecheck    # TypeScript check
 npm run lint         # ESLint
-npm run build        # Build producción
+npm run build        # Build producción (shared + api + web)
 ```
 
 ### Seed de datos
 
 ```bash
-# Reportes demo con tráfico variable realista
-npm run seed:demo -w @pdv/api -- 1500
-
-# Organizaciones, voluntarios y usuarios de prueba
-npm run seed:orgs -w @pdv/api
-
-# Simulador con rate control
-npm run sim -w @pdv/api -- --rate 20 --total 300
+npm run seed:demo -w @pdv/api -- 1500   # Reportes demo
+npm run seed:orgs -w @pdv/api           # Organizaciones + usuarios
+npm run sim -w @pdv/api -- --rate 20 --total 300  # Simulador
 ```
 
-Usuarios de prueba (crear con `seed:orgs`):
+Usuarios de prueba: `admin` / `PdV2026!`, `lector` / `lector2026`, `operador` / `operador2026`.
 
-| Usuario    | Contraseña     | Rol      |
-| ---------- | -------------- | -------- |
-| `lector`   | `lector2026`   | viewer   |
-| `operador` | `operador2026` | operator |
-| `admin`    | `PdV2026!`     | admin    |
-
----
-
-## 💬 WhatsApp
-
-Por defecto corre en **modo simulado** (sin costo). Los mensajes se ven en la sección Ciudadanos y se clasifican automáticamente.
-
-Para activar un proveedor real, configurar en el panel Admin → Configuración o en `.env`:
-
-```env
-WHATSAPP_MODE=generic
-WHATSAPP_API_URL=https://tu-proveedor/api
-WHATSAPP_API_KEY=tu-api-key
-```
+> **Nota:** La app mobile (Expo) se está desarrollando. Consultá [ROADMAP-MOBILE.md](ROADMAP-MOBILE.md) para el estado.
 
 ## 📄 Licencia
 

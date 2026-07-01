@@ -6,12 +6,14 @@
   "license": "MIT",
   "workspaces": [
     "apps/api",
-    "apps/web"
+    "apps/web",
+    "apps/mobile",
+    "packages/shared"
   ],
   "scripts": {
     "dev": "concurrently -n api,web -c blue,magenta \"npm run dev -w @pdv/api\" \"npm run dev -w @pdv/web\"",
-    "build": "npm run build -w @pdv/api && npm run build -w @pdv/web",
-    "typecheck": "npm run typecheck -w @pdv/api && npm run typecheck -w @pdv/web",
+    "build": "npm run build -w @pdv/shared && npm run build -w @pdv/api && npm run build -w @pdv/web",
+    "typecheck": "npm run typecheck -w @pdv/shared && npm run typecheck -w @pdv/api && npm run typecheck -w @pdv/web",
     "lint": "eslint \"apps/**/*.{ts,tsx,js,jsx}\"",
     "lint:fix": "eslint \"apps/**/*.{ts,tsx,js,jsx}\" --fix",
     "format": "prettier --write \"apps/**/*.{ts,tsx,json,css,md}\" \"*.{json,md}\"",
@@ -24,7 +26,6 @@
     "prepare": "husky"
   },
   "devDependencies": {
-    "@rollup/rollup-linux-x64-gnu": "^4.62.2",
     "@typescript-eslint/eslint-plugin": "^8.62.0",
     "@typescript-eslint/parser": "^8.62.0",
     "concurrently": "^9.1.0",

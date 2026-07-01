@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "Puente de Vida",
+    "slug": "puente-de-vida",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "../../material-visual/logo.png",
+    "scheme": "pdv",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "backgroundColor": "#15181e"
+    },
+    "android": {
+      "package": "org.puentdevida.app",
+      "versionCode": 1,
+      "minSdkVersion": 24,
+      "targetSdkVersion": 34,
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA",
+        "RECEIVE_BOOT_COMPLETED"
+      ],
+      "adaptiveIcon": {
+        "backgroundColor": "#15181e"
+      }
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-sqlite",
+      "expo-location",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Puente de Vida necesita acceder a la cámara para adjuntar fotos a las necesidades."
+        }
+      ]
+    ],
+    "extra": {
+      "apiUrl": "http://localhost:4000"
+    }
+  }
+}

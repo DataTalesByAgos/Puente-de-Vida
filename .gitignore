@@ -41,3 +41,17 @@ mcp.json
 
 # Agent metadata
 AGENTS.md
+
+# Expo / React Native
+apps/mobile/.expo/
+apps/mobile/dist/
+apps/mobile/android/
+apps/mobile/ios/
+apps/mobile/*.jks
+apps/mobile/*.p8
+apps/mobile/*.keystore
+apps/mobile/*.hprof
+apps/mobile/web-build/
+
+# Shared package build
+packages/shared/dist/
