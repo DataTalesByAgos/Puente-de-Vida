@@ -1,4 +1,5 @@
-import type { IncidentType, Priority, ServerReport, Source, Status } from './types';
+import type { IncidentType, Priority, ServerReport, LegacySource as Source, Status } from './types';
+import { createApiClient } from '@pdv/shared';
 
 export const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000';
 
@@ -57,6 +58,7 @@ export interface DashboardStats {
   volunteers: { active: number } | null;
 }
 
+// Legacy API (reportes)
 export const api = {
   health: () => http<{ status: string; aiEngine: string }>('/health'),
 
@@ -112,3 +114,9 @@ export const api = {
 
   whatsappStatus: () => http<WhatsappStatus>('/api/whatsapp/status'),
 };
+
+// Nuevo API client para necesidades (desde @pdv/shared)
+export const needApi = createApiClient({
+  baseUrl: API_URL,
+  getToken: () => sessionStorage.getItem('admin_token'),
+});

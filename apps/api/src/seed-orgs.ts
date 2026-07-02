@@ -822,7 +822,6 @@ interface UserInput {
 const USERS: UserInput[] = [
   { username: 'lector', pass: 'lector2026', role: 'viewer', name: 'María Rodríguez' },
   { username: 'operador', pass: 'operador2026', role: 'operator', name: 'Carlos Méndez' },
-  { username: 'admin', pass: 'PdV2026!', role: 'admin', name: 'Administrador del Sistema' },
 ];
 
 async function main() {
@@ -875,7 +874,7 @@ async function main() {
   console.log(`\n  Total: ${volCount} voluntarios insertados.\n`);
 
   // ── Insertar usuarios ──
-  await query("DELETE FROM users WHERE username IN ('lector', 'operador', 'admin')");
+  await query("DELETE FROM users WHERE username IN ('lector', 'operador')");
   for (const u of USERS) {
     const salt = randomBytes(16).toString('hex');
     const hash = hashPass(u.pass, salt);

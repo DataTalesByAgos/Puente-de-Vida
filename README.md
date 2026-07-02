@@ -91,7 +91,7 @@ npm run seed:orgs -w @pdv/api           # Organizaciones + usuarios
 npm run sim -w @pdv/api -- --rate 20 --total 300  # Simulador
 ```
 
-Usuarios de prueba: `admin` / `PdV2026!`, `lector` / `lector2026`, `operador` / `operador2026`.
+Usuarios de prueba: `npm run seed:admin -w @pdv/api` crea `admin`/`PdV2026!`; `npm run seed:orgs -w @pdv/api` crea `lector`/`lector2026` y `operador`/`operador2026`.
 
 > **Nota:** La app mobile (Expo) se está desarrollando. Consultá [ROADMAP-MOBILE.md](ROADMAP-MOBILE.md) para el estado.
 

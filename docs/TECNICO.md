@@ -121,6 +121,14 @@ Sistema simple con sesiones en memoria (sin JWT, sin refresh tokens).
 
 ### Login
 
+Primero creá el usuario admin de prueba:
+
+```bash
+npm run seed:admin -w @pdv/api
+```
+
+Luego:
+
 ```http
 POST /api/admin/login
 Content-Type: application/json

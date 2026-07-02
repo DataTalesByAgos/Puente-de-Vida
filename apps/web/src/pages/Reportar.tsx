@@ -1,9 +1,13 @@
 import { useMemo, useState } from 'react';
 import { useApp } from '@/components/AppProvider';
-import { createLocalReport } from '@/lib/sync';
-import { classifyLocal } from '@/lib/heuristic';
-import { PRIORITY_LABELS, TYPE_ICONS, TYPE_LABELS } from '@/lib/types';
-import { PRIORITY_CHIP } from '@/lib/format';
+import { createLocalNeed } from '@/lib/sync';
+import {
+  NEED_CATEGORIES,
+  CATEGORY_LABELS,
+  CATEGORY_ICONS,
+  SUBCATEGORY_LABELS,
+  type NeedCategory,
+} from '@/lib/types';
 
 function fileToDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -15,20 +19,19 @@ function fileToDataUrl(file: File): Promise<string> {
 }
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3 MB
+const MAX_FILE_SIZE = 3 * 1024 * 1024;
 
 export default function ReportarPage() {
   const { online } = useApp();
-  const [text, setText] = useState('');
-  const [name, setName] = useState('');
+  const [title, setTitle] = useState('');
+  const [desc, setDesc] = useState('');
+  const [category, setCategory] = useState<NeedCategory>('logistica');
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [photo, setPhoto] = useState<string | null>(null);
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
   const [geoMsg, setGeoMsg] = useState('');
-
-  const preview = useMemo(() => (text.trim().length > 3 ? classifyLocal(text) : null), [text]);
 
   function locate() {
     if (!navigator.geolocation) {
@@ -63,21 +66,68 @@ export default function ReportarPage() {
     setPhoto(await fileToDataUrl(file));
   }
 
+  const subcategories = useMemo(() => {
+    const subs = SUBCATEGORY_LABELS as Record<string, string>;
+    const entries = Object.entries(subs);
+    return entries.filter(([key]) => {
+      const catSubs = {
+        profesionales: [
+          'medico',
+          'enfermeria',
+          'ingenieria',
+          'psicologia',
+          'educacion',
+          'legal',
+          'comunicacion',
+          'otro_prof',
+        ],
+        no_profesionales: [
+          'carga',
+          'limpieza',
+          'cocina',
+          'cuidado',
+          'traduccion',
+          'compania',
+          'otro_no_prof',
+        ],
+        logistica: [
+          'transporte',
+          'donaciones',
+          'albergue',
+          'alimento',
+          'agua',
+          'medicinas',
+          'ropa',
+          'otro_log',
+        ],
+        otros: ['informacion', 'difusion', 'apoyo_moral', 'otro'],
+      };
+      return (catSubs[category] ?? []).includes(key);
+    });
+  }, [category]);
+
+  const [subcategory, setSubcategory] = useState('');
+
   async function submit() {
-    if (text.trim().length < 4) return;
+    if (title.trim().length < 3 || desc.trim().length < 10) return;
     setSaving(true);
     try {
-      await createLocalReport({
-        rawText: text.trim(),
+      await createLocalNeed({
+        title: title.trim(),
+        description: desc.trim(),
+        category,
+        subcategory: subcategory || null,
         lat: coords?.lat ?? null,
         lng: coords?.lng ?? null,
         locationText: null,
-        reporterName: name.trim() || 'Anónimo',
         photoDataUrl: photo,
+        source: 'pwa',
       });
       setDone(true);
-      setText('');
-      setName('');
+      setTitle('');
+      setDesc('');
+      setCategory('logistica');
+      setSubcategory('');
       setCoords(null);
       setPhoto(null);
       setGeoMsg('');
@@ -92,55 +142,81 @@ export default function ReportarPage() {
       <div className="flex flex-col gap-1">
         <div className="flex items-center gap-2">
           <span className="chip border border-sky/40 bg-sky/15 text-skyInk">
-            📱 Voluntario en terreno
+            📱 Solicitud ciudadana
           </span>
         </div>
-        <h1 className="mt-1 font-display text-lg font-bold">Reportar incidente</h1>
+        <h1 className="mt-1 font-display text-lg font-bold">Publicar necesidad</h1>
         <p className="text-sm text-muted">
-          Para voluntarios y equipos de respuesta. Se guarda en tu dispositivo al instante y se
-          sincroniza solo cuando vuelva Internet.{' '}
+          Publicá una necesidad para que voluntarios y organizaciones puedan ayudarte. Se guarda en
+          tu dispositivo al instante y se sincroniza solo cuando vuelva Internet.{' '}
           <strong className="text-ink">Funciona sin señal.</strong>
         </p>
       </div>
 
       {done && (
         <div className="card border-wa/40 bg-wa/10 text-sm font-medium text-waInk">
-          ✓ Reporte guardado{online ? ' y enviándose…' : ' (offline, se subirá al reconectar).'}
+          ✓ Necesidad publicada
+          {online ? ' y sincronizándose…' : ' (offline, se subirá al reconectar).'}
         </div>
       )}
 
       <label className="flex flex-col gap-1">
-        <span className="text-sm text-muted">¿Qué está pasando?</span>
-        <textarea
-          className="input min-h-32"
-          placeholder="Ej.: Hay un edificio derrumbado en la calle Sucre, 3 personas atrapadas."
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-        />
-      </label>
-
-      {preview && (
-        <div className="card flex flex-wrap items-center gap-2 text-sm">
-          <span className="text-muted">🤖 Clasificación automática:</span>
-          <span className="chip border border-line bg-paper text-ink">
-            {TYPE_ICONS[preview.incidentType]} {TYPE_LABELS[preview.incidentType]}
-          </span>
-          <span className={`chip ${PRIORITY_CHIP[preview.priority]}`}>
-            {PRIORITY_LABELS[preview.priority]}
-          </span>
-          <span className="text-xs text-muted">(la IA del servidor la afina al sincronizar)</span>
-        </div>
-      )}
-
-      <label className="flex flex-col gap-1">
-        <span className="text-sm text-muted">Tu nombre (opcional)</span>
+        <span className="text-sm text-muted">Título *</span>
         <input
           className="input"
-          placeholder="Nombre o equipo"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          placeholder="Ej.: Necesitamos agua potable"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
         />
       </label>
+
+      <label className="flex flex-col gap-1">
+        <span className="text-sm text-muted">¿Qué necesitas? *</span>
+        <textarea
+          className="input min-h-28"
+          placeholder="Describí la necesidad con el mayor detalle posible..."
+          value={desc}
+          onChange={(e) => setDesc(e.target.value)}
+        />
+      </label>
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <label className="flex flex-col gap-1">
+          <span className="text-sm text-muted">Categoría</span>
+          <select
+            className="input"
+            value={category}
+            onChange={(e) => {
+              setCategory(e.target.value as NeedCategory);
+              setSubcategory('');
+            }}
+          >
+            {NEED_CATEGORIES.map((c) => (
+              <option key={c} value={c}>
+                {CATEGORY_ICONS[c]} {CATEGORY_LABELS[c]}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {subcategories.length > 0 && (
+          <label className="flex flex-col gap-1">
+            <span className="text-sm text-muted">Subcategoría</span>
+            <select
+              className="input"
+              value={subcategory}
+              onChange={(e) => setSubcategory(e.target.value)}
+            >
+              <option value="">—</option>
+              {subcategories.map(([key, label]) => (
+                <option key={key} value={key}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="card flex flex-col gap-2">
@@ -167,9 +243,7 @@ export default function ReportarPage() {
           {photo ? (
             <img src={photo} alt="adjunto" className="h-20 w-full rounded-lg object-cover" />
           ) : (
-            <p className="text-xs text-muted">
-              JPEG, PNG o WebP · máx 3 MB. Se guarda en el dispositivo.
-            </p>
+            <p className="text-xs text-muted">JPEG, PNG o WebP · máx 3 MB.</p>
           )}
           {photoError && <p className="text-xs text-red-500">{photoError}</p>}
         </div>
@@ -178,9 +252,9 @@ export default function ReportarPage() {
       <button
         className="btn-primary text-base"
         onClick={submit}
-        disabled={saving || text.trim().length < 4}
+        disabled={saving || title.trim().length < 3 || desc.trim().length < 10}
       >
-        {saving ? 'Guardando…' : 'Enviar reporte'}
+        {saving ? 'Guardando…' : 'Publicar necesidad'}
       </button>
     </div>
   );

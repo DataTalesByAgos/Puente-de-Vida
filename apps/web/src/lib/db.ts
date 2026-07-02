@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie';
-import type { AuditEntry, LocalReport, ServerReport } from './types';
+import type { AuditEntry, LocalNeed, LocalReport, ServerReport } from './types';
 import { encrypt, isCryptoReady } from './crypto';
 
 const ENCRYPTED_FIELDS = [
@@ -7,6 +7,15 @@ const ENCRYPTED_FIELDS = [
   'reporterPhone',
   'rawText',
   'locationText',
+  'photoDataUrl',
+];
+
+const NEED_ENCRYPTED_FIELDS = [
+  'title',
+  'description',
+  'locationText',
+  'resourcesNeeded',
+  'comments',
   'photoDataUrl',
 ];
 
@@ -19,15 +28,26 @@ async function encryptObj(obj: Record<string, unknown>): Promise<void> {
   }
 }
 
+async function encryptNeedObj(obj: Record<string, unknown>): Promise<void> {
+  for (const field of NEED_ENCRYPTED_FIELDS) {
+    const val = obj[field];
+    if (typeof val === 'string' && val && !val.startsWith('~')) {
+      obj[field] = await encrypt(val);
+    }
+  }
+}
+
 class PdvDatabase extends Dexie {
   reports!: Table<LocalReport, string>;
+  needs!: Table<LocalNeed, string>;
   meta!: Table<{ id: string; value: string }, string>;
   audit!: Table<AuditEntry, number>;
 
   constructor() {
     super('puente_de_vida');
-    this.version(2).stores({
+    this.version(3).stores({
       reports: 'key, synced, status, incidentType, priority, updatedAt',
+      needs: 'key, synced, status, category, priority, scope, updatedAt, createdAt',
       meta: 'id',
       audit: '++id, reportKey, synced, createdAt',
     });
@@ -36,7 +56,7 @@ class PdvDatabase extends Dexie {
 
 export const db = new PdvDatabase();
 
-// Encryption hooks — encrypt sensitive fields before IndexedDB write
+// Encryption hooks — reports
 (db.reports.hook as unknown as (name: string, fn: (...args: unknown[]) => unknown) => void)(
   'creating',
   (...args: unknown[]) => {
@@ -49,6 +69,22 @@ export const db = new PdvDatabase();
   (...args: unknown[]) => {
     if (!isCryptoReady()) return;
     return encryptObj(args[0] as Record<string, unknown>);
+  },
+);
+
+// Encryption hooks — needs
+(db.needs.hook as unknown as (name: string, fn: (...args: unknown[]) => unknown) => void)(
+  'creating',
+  (...args: unknown[]) => {
+    if (!isCryptoReady()) return;
+    return encryptNeedObj(args[1] as Record<string, unknown>);
+  },
+);
+(db.needs.hook as unknown as (name: string, fn: (...args: unknown[]) => unknown) => void)(
+  'updating',
+  (...args: unknown[]) => {
+    if (!isCryptoReady()) return;
+    return encryptNeedObj(args[0] as Record<string, unknown>);
   },
 );
 

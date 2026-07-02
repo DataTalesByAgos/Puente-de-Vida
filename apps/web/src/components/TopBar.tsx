@@ -5,8 +5,8 @@ import { useApp } from './AppProvider';
 const NAV = [
   { href: '/', label: 'Panel', icon: '🧭', hint: 'Coordinador' },
   { href: '/whatsapp', label: 'WhatsApp', icon: '💬', hint: 'Ciudadanos' },
-  { href: '/reportar', label: 'Reportar', icon: '➕', hint: 'Voluntario' },
-  { href: '/reportes', label: 'Reportes', icon: '🗂️', hint: 'Todos' },
+  { href: '/reportar', label: 'Solicitar', icon: '➕', hint: 'Nueva necesidad' },
+  { href: '/reportes', label: 'Necesidades', icon: '📋', hint: 'Todas' },
   { href: '/mapa', label: 'Mapa', icon: '🗺️', hint: 'Terreno' },
 ];
 

@@ -1,7 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { API_URL } from '@/lib/api';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '@/lib/db';
 import { initCrypto, resetCrypto } from '@/lib/crypto';
 import OrganigramaView from '@/components/OrganigramaView';
+import type { NeedCategory, NeedStatus, NeedScope, Priority } from '@/lib/types';
+import {
+  CATEGORY_LABELS,
+  CATEGORY_ICONS,
+  NEED_STATUS_LABELS,
+  NEED_SCOPE_LABELS,
+  PRIORITY_LABELS,
+} from '@/lib/types';
 
 type AdminStats = {
   totals: { total: number; duplicates: number; active: number; people: number };
@@ -37,6 +47,7 @@ const ROLE_COLORS: Record<string, string> = {
 
 const TABS = [
   { id: 'stats', label: '📊 Estadísticas', minRole: 'viewer' },
+  { id: 'needs', label: '📋 Necesidades', minRole: 'viewer' },
   { id: 'orgs', label: '🏛️ Organizaciones', minRole: 'operator' },
   { id: 'inventory', label: '📦 Inventario', minRole: 'operator' },
   { id: 'missing', label: '🔍 Desaparecidos', minRole: 'viewer' },
@@ -117,6 +128,30 @@ export default function AdminPage() {
   const [loginErr, setLoginErr] = useState('');
   const [tab, setTab] = useState<TabId>('stats');
   const [stats, setStats] = useState<AdminStats | null>(null);
+  const allNeeds = useLiveQuery(async () => db.needs.toArray(), [], []);
+  const needStats = useMemo(() => {
+    const arr = allNeeds ?? [];
+    const byCategory = new Map<NeedCategory, number>();
+    const byStatus = new Map<NeedStatus, number>();
+    const byPriority = new Map<Priority, number>();
+    const byScope = new Map<NeedScope, number>();
+    for (const n of arr) {
+      byCategory.set(n.category, (byCategory.get(n.category) ?? 0) + 1);
+      byStatus.set(n.status, (byStatus.get(n.status) ?? 0) + 1);
+      byPriority.set(n.priority, (byPriority.get(n.priority) ?? 0) + 1);
+      byScope.set(n.scope, (byScope.get(n.scope) ?? 0) + 1);
+    }
+    return {
+      total: arr.length,
+      by_category: [...byCategory.entries()].map(([category, count]) => ({ category, count })),
+      by_status: [...byStatus.entries()].map(([status, count]) => ({ status, count })),
+      by_priority: [...byPriority.entries()].map(([priority, count]) => ({ priority, count })),
+      by_scope: [...byScope.entries()].map(([scope, count]) => ({ scope, count })),
+      volunteers_active: 0,
+      organizations_active: 0,
+      needs_pending_review: 0,
+    };
+  }, [allNeeds]);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [newUser, setNewUser] = useState({ username: '', password: '', role: 'viewer', name: '' });
   const [configData, setConfigData] = useState<{
@@ -137,7 +172,6 @@ export default function AdminPage() {
   >([]);
   const [apiErr, setApiErr] = useState('');
 
-  // Inventory state
   const [invFilterOrg, setInvFilterOrg] = useState<string>('');
   const [invSearch, setInvSearch] = useState('');
   const [invItems, setInvItems] = useState<
@@ -161,7 +195,6 @@ export default function AdminPage() {
     notes: '',
   });
 
-  // Org chart state
   const [orgs, setOrgs] = useState<
     {
       id: string;
@@ -192,14 +225,15 @@ export default function AdminPage() {
     }[]
   >([]);
 
-  // Cargar datos según tab y rol
   const roleLevel = HIERARCHY[session?.role ?? ''] ?? 0;
   useEffect(() => {
     if (!token) return;
     setApiErr('');
     const fn = async () => {
       try {
-        if (tab === 'stats') setStats(await apiAdmin('/api/admin/stats', token));
+        if (tab === 'stats') {
+          setStats(await apiAdmin('/api/admin/stats', token));
+        }
         if (roleLevel >= 2) {
           if (tab === 'users') setUsers(await apiAdmin('/api/admin/users', token));
           if (tab === 'config') {
@@ -293,7 +327,6 @@ export default function AdminPage() {
   const canManageOrgs = roleLevel >= 1;
   const visibleTabs = TABS.filter((t) => roleLevel >= HIERARCHY[t.minRole]);
 
-  // ── Login screen ────────────────────────────────────────────────────────
   if (!token) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
@@ -336,10 +369,8 @@ export default function AdminPage() {
     );
   }
 
-  // ── Main panel ──────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="sticky top-0 z-10 border-b border-gray-200 bg-white/80 backdrop-blur-sm">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2">
@@ -363,7 +394,6 @@ export default function AdminPage() {
         </div>
       </header>
 
-      {/* Tabs */}
       <div className="mx-auto max-w-6xl px-4 pt-6">
         <div className="flex gap-1 border-b border-gray-200 overflow-x-auto">
           {visibleTabs.map((t) => (
@@ -381,7 +411,7 @@ export default function AdminPage() {
       <div className="mx-auto max-w-6xl px-4 py-6 space-y-4">
         {apiErr && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{apiErr}</p>}
 
-        {/* ── Stats ───────────────────────────────────────────────────── */}
+        {/* ── Stats (Reportes legacy) ────────────────────────────────── */}
         {tab === 'stats' && stats && (
           <>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -402,7 +432,6 @@ export default function AdminPage() {
                 <p className="text-xs text-gray-500">Duplicados agrupados</p>
               </div>
             </div>
-
             <Section title="Por fuente">
               {stats.bySource.map((s) => (
                 <Bar
@@ -497,8 +526,85 @@ export default function AdminPage() {
           <p className="text-center text-sm text-gray-400 py-12">Cargando...</p>
         )}
 
+        {/* ── Needs Stats ────────────────────────────────────────────── */}
+        {tab === 'needs' && needStats && (
+          <>
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
+              <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm text-center">
+                <p className="text-2xl font-bold">{needStats.total}</p>
+                <p className="text-xs text-gray-500">Total necesidades</p>
+              </div>
+              <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm text-center">
+                <p className="text-2xl font-bold">{needStats.volunteers_active}</p>
+                <p className="text-xs text-gray-500">Voluntarios activos</p>
+              </div>
+              <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm text-center">
+                <p className="text-2xl font-bold">{needStats.organizations_active}</p>
+                <p className="text-xs text-gray-500">Organizaciones</p>
+              </div>
+              <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm text-center">
+                <p className="text-2xl font-bold">{needStats.needs_pending_review}</p>
+                <p className="text-xs text-gray-500">Pendientes revisión</p>
+              </div>
+              <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm text-center">
+                <p className="text-2xl font-bold">
+                  {needStats.by_scope.find((s) => s.scope === 'macro')?.count ?? 0}
+                </p>
+                <p className="text-xs text-gray-500">Macro-necesidades</p>
+              </div>
+            </div>
+
+            <Section title="Por categoría">
+              {needStats.by_category.map((c) => (
+                <Bar
+                  key={c.category}
+                  label={`${CATEGORY_ICONS[c.category]} ${CATEGORY_LABELS[c.category]}`}
+                  count={c.count}
+                  max={Math.max(...needStats.by_category.map((x) => x.count), 1)}
+                  color="bg-emerald-500"
+                />
+              ))}
+            </Section>
+            <Section title="Por estado">
+              {needStats.by_status.map((s) => (
+                <Bar
+                  key={s.status}
+                  label={NEED_STATUS_LABELS[s.status]}
+                  count={s.count}
+                  max={Math.max(...needStats.by_status.map((x) => x.count), 1)}
+                  color="bg-purple-500"
+                />
+              ))}
+            </Section>
+            <Section title="Por prioridad">
+              {needStats.by_priority.map((p) => (
+                <Bar
+                  key={p.priority}
+                  label={PRIORITY_LABELS[p.priority]}
+                  count={p.count}
+                  max={Math.max(...needStats.by_priority.map((x) => x.count), 1)}
+                  color={PRIO_COLORS[p.priority] ?? 'bg-gray-400'}
+                />
+              ))}
+            </Section>
+            <Section title="Por alcance">
+              {needStats.by_scope.map((s) => (
+                <Bar
+                  key={s.scope}
+                  label={NEED_SCOPE_LABELS[s.scope]}
+                  count={s.count}
+                  max={Math.max(...needStats.by_scope.map((x) => x.count), 1)}
+                  color="bg-teal-500"
+                />
+              ))}
+            </Section>
+          </>
+        )}
+        {tab === 'needs' && !needStats && (
+          <p className="text-center text-sm text-gray-400 py-12">Cargando...</p>
+        )}
+
         {/* ── Export ──────────────────────────────────────────────────── */}
-        {/* ── Desaparecidos (registros unificados) ─────────────────────── */}
         {tab === 'missing' && <MissingPersonsView token={token!} apiAdmin={apiAdmin} />}
 
         {tab === 'export' && (
@@ -615,109 +721,99 @@ export default function AdminPage() {
 
         {/* ── Config / Proveedores ────────────────────────────────────── */}
         {tab === 'config' && configData && isAdmin && (
-          <>
-            <Section title="Proveedores">
-              <div className="space-y-4">
-                <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-4">
-                  <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-800">
-                    <span>🤖</span> Clasificación por IA
-                    <span
-                      className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                        configData.env.aiProvider === 'openai'
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-gray-100 text-gray-500'
-                      }`}
-                    >
-                      {configData.env.aiProvider === 'openai' ? 'Conectado' : 'Heurística local'}
-                    </span>
-                  </h4>
-                  <div className="space-y-2">
-                    <LabelInput
-                      label="Proveedor"
-                      value={editConfig.aiProvider ?? ''}
-                      onChange={(v) => setEditConfig((p) => ({ ...p, aiProvider: v }))}
-                      placeholder="none / openai"
-                    />
-                    <LabelInput
-                      label="URL API"
-                      value={editConfig.aiApiUrl ?? ''}
-                      onChange={(v) => setEditConfig((p) => ({ ...p, aiApiUrl: v }))}
-                    />
-                    <LabelInput
-                      label="Modelo"
-                      value={editConfig.aiModel ?? ''}
-                      onChange={(v) => setEditConfig((p) => ({ ...p, aiModel: v }))}
-                      placeholder="gpt-4o-mini"
-                    />
-                    <LabelInput
-                      label="API Key"
-                      value={editConfig.aiApiKey ?? ''}
-                      onChange={(v) => setEditConfig((p) => ({ ...p, aiApiKey: v }))}
-                      sensitive
-                    />
-                  </div>
-                </div>
-                <div className="rounded-xl border border-green-100 bg-green-50/50 p-4">
-                  <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-800">
-                    <span>💬</span> WhatsApp
-                    <span
-                      className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                        configData.env.whatsappApiUrl
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-amber-100 text-amber-700'
-                      }`}
-                    >
-                      {configData.env.whatsappApiUrl ? 'Configurado' : 'Modo demo'}
-                    </span>
-                  </h4>
-                  <div className="space-y-2">
-                    <LabelInput
-                      label="URL API"
-                      value={editConfig.whatsappApiUrl ?? ''}
-                      onChange={(v) => setEditConfig((p) => ({ ...p, whatsappApiUrl: v }))}
-                    />
-                    <LabelInput
-                      label="API Key"
-                      value={editConfig.whatsappApiKey ?? ''}
-                      onChange={(v) => setEditConfig((p) => ({ ...p, whatsappApiKey: v }))}
-                      sensitive
-                    />
-                    <LabelInput
-                      label="Phone ID"
-                      value={editConfig.whatsappPhoneId ?? ''}
-                      onChange={(v) => setEditConfig((p) => ({ ...p, whatsappPhoneId: v }))}
-                    />
-                    <label className="flex items-center gap-2 text-xs text-gray-600">
-                      <input
-                        type="checkbox"
-                        checked={editConfig.whatsappAutoReply === 'true'}
-                        onChange={(e) =>
-                          setEditConfig((p) => ({
-                            ...p,
-                            whatsappAutoReply: e.target.checked ? 'true' : 'false',
-                          }))
-                        }
-                        className="rounded border-gray-300"
-                      />
-                      Auto-respuesta activa
-                    </label>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={saveConfig}
-                    className="rounded-lg bg-gray-900 px-4 py-2 text-xs font-semibold text-white hover:bg-gray-800 transition-colors"
+          <Section title="Proveedores">
+            <div className="space-y-4">
+              <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-4">
+                <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-800">
+                  <span>🤖</span> Clasificación por IA
+                  <span
+                    className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-medium ${configData.env.aiProvider === 'openai' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}
                   >
-                    {configSaved ? '✓ Guardado' : 'Guardar cambios'}
-                  </button>
-                  <span className="text-xs text-gray-400">Requiere reiniciar el servidor.</span>
+                    {configData.env.aiProvider === 'openai' ? 'Conectado' : 'Heurística local'}
+                  </span>
+                </h4>
+                <div className="space-y-2">
+                  <LabelInput
+                    label="Proveedor"
+                    value={editConfig.aiProvider ?? ''}
+                    onChange={(v) => setEditConfig((p) => ({ ...p, aiProvider: v }))}
+                    placeholder="none / openai"
+                  />
+                  <LabelInput
+                    label="URL API"
+                    value={editConfig.aiApiUrl ?? ''}
+                    onChange={(v) => setEditConfig((p) => ({ ...p, aiApiUrl: v }))}
+                  />
+                  <LabelInput
+                    label="Modelo"
+                    value={editConfig.aiModel ?? ''}
+                    onChange={(v) => setEditConfig((p) => ({ ...p, aiModel: v }))}
+                    placeholder="gpt-4o-mini"
+                  />
+                  <LabelInput
+                    label="API Key"
+                    value={editConfig.aiApiKey ?? ''}
+                    onChange={(v) => setEditConfig((p) => ({ ...p, aiApiKey: v }))}
+                    sensitive
+                  />
                 </div>
               </div>
-            </Section>
-          </>
+              <div className="rounded-xl border border-green-100 bg-green-50/50 p-4">
+                <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-800">
+                  <span>💬</span> WhatsApp
+                  <span
+                    className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-medium ${configData.env.whatsappApiUrl ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}
+                  >
+                    {configData.env.whatsappApiUrl ? 'Configurado' : 'Modo demo'}
+                  </span>
+                </h4>
+                <div className="space-y-2">
+                  <LabelInput
+                    label="URL API"
+                    value={editConfig.whatsappApiUrl ?? ''}
+                    onChange={(v) => setEditConfig((p) => ({ ...p, whatsappApiUrl: v }))}
+                  />
+                  <LabelInput
+                    label="API Key"
+                    value={editConfig.whatsappApiKey ?? ''}
+                    onChange={(v) => setEditConfig((p) => ({ ...p, whatsappApiKey: v }))}
+                    sensitive
+                  />
+                  <LabelInput
+                    label="Phone ID"
+                    value={editConfig.whatsappPhoneId ?? ''}
+                    onChange={(v) => setEditConfig((p) => ({ ...p, whatsappPhoneId: v }))}
+                  />
+                  <label className="flex items-center gap-2 text-xs text-gray-600">
+                    <input
+                      type="checkbox"
+                      checked={editConfig.whatsappAutoReply === 'true'}
+                      onChange={(e) =>
+                        setEditConfig((p) => ({
+                          ...p,
+                          whatsappAutoReply: e.target.checked ? 'true' : 'false',
+                        }))
+                      }
+                      className="rounded border-gray-300"
+                    />
+                    Auto-respuesta activa
+                  </label>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={saveConfig}
+                  className="rounded-lg bg-gray-900 px-4 py-2 text-xs font-semibold text-white hover:bg-gray-800 transition-colors"
+                >
+                  {configSaved ? '✓ Guardado' : 'Guardar cambios'}
+                </button>
+                <span className="text-xs text-gray-400">Requiere reiniciar el servidor.</span>
+              </div>
+            </div>
+          </Section>
         )}
 
-        {/* ── Organizaciones ─────────────────────────────────────────────── */}
+        {/* ── Organizaciones ─────────────────────────────────────────── */}
         {tab === 'orgs' && canManageOrgs && (
           <OrganigramaView
             orgs={orgs}
@@ -732,7 +828,7 @@ export default function AdminPage() {
           />
         )}
 
-        {/* ── Inventario ────────────────────────────────────────────────── */}
+        {/* ── Inventario ─────────────────────────────────────────────── */}
         {tab === 'inventory' && canManageOrgs && (
           <Section title="Inventario de organizaciones">
             <div className="flex flex-wrap gap-3 mb-4">
@@ -756,7 +852,6 @@ export default function AdminPage() {
               />
             </div>
 
-            {/* Formulario de alta */}
             <details className="mb-4">
               <summary className="cursor-pointer text-sm font-medium text-gray-700 hover:text-gray-900">
                 + Agregar item
@@ -764,16 +859,15 @@ export default function AdminPage() {
               <form
                 onSubmit={async (e) => {
                   e.preventDefault();
-                  const body = {
-                    item_name: invForm.item_name,
-                    category: invForm.category,
-                    quantity: invForm.quantity,
-                    unit: invForm.unit,
-                    notes: invForm.notes || undefined,
-                  };
                   await apiAdmin(`/api/admin/orgs/${invForm.organization_id}/inventory`, token!, {
                     method: 'POST',
-                    body: JSON.stringify(body),
+                    body: JSON.stringify({
+                      item_name: invForm.item_name,
+                      category: invForm.category,
+                      quantity: invForm.quantity,
+                      unit: invForm.unit,
+                      notes: invForm.notes || undefined,
+                    }),
                   });
                   setInvItems(await apiAdmin('/api/admin/inventory', token!));
                   setInvForm({
@@ -864,7 +958,6 @@ export default function AdminPage() {
               </form>
             </details>
 
-            {/* Tabla */}
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -923,7 +1016,7 @@ export default function AdminPage() {
           </Section>
         )}
 
-        {/* ── Auditoría ────────────────────────────────────────────────── */}
+        {/* ── Auditoría ──────────────────────────────────────────────── */}
         {tab === 'audit' && isAdmin && (
           <Section title="Registro de cambios">
             <div className="space-y-1">
@@ -980,7 +1073,7 @@ type ExternalStats = {
   sources: { name: string; record_count: number; last_sync_at: string | null }[];
 };
 
-const STATUS_COLORS: Record<string, string> = {
+const PERSON_STATUS_COLORS: Record<string, string> = {
   desaparecido: 'bg-red-100 text-red-700',
   localizado: 'bg-green-100 text-green-700',
   hospitalizado: 'bg-amber-100 text-amber-700',
@@ -1005,7 +1098,6 @@ function MissingPersonsView({
   const [ingestResult, setIngestResult] = useState<string | null>(null);
   const [selected, setSelected] = useState<ExternalPerson | null>(null);
 
-  // Cargar stats al montar
   useEffect(() => {
     apiAdmin('/api/external/stats', token)
       .then((d) => setStats(d as ExternalStats))
@@ -1034,11 +1126,11 @@ function MissingPersonsView({
     setIngesting(true);
     setIngestResult(null);
     try {
-      const data = (await apiAdmin('/api/external/ingest', token, {
-        method: 'POST',
-      })) as { sources: { name: string; inserted: number }[]; total: number };
+      const data = (await apiAdmin('/api/external/ingest', token, { method: 'POST' })) as {
+        sources: { name: string; inserted: number }[];
+        total: number;
+      };
       setIngestResult(`Sincronizadas ${data.total} personas de ${data.sources.length} fuentes.`);
-      // Recargar stats
       apiAdmin('/api/external/stats', token)
         .then((d) => setStats(d as ExternalStats))
         .catch(() => {});
@@ -1053,7 +1145,6 @@ function MissingPersonsView({
 
   return (
     <>
-      {/* Stats header */}
       {stats && (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm text-center">
@@ -1072,7 +1163,6 @@ function MissingPersonsView({
         </div>
       )}
 
-      {/* Fuentes */}
       {stats && stats.sources.length > 0 && (
         <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
           <h3 className="mb-2 font-bold text-sm text-gray-500 uppercase tracking-wider">Fuentes</h3>
@@ -1092,7 +1182,6 @@ function MissingPersonsView({
         </div>
       )}
 
-      {/* Búsqueda */}
       <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
         <div className="flex items-end gap-3">
           <div className="flex-1">
@@ -1130,7 +1219,6 @@ function MissingPersonsView({
         </div>
       </div>
 
-      {/* Resultados */}
       {results.length > 0 && (
         <p className="text-sm text-gray-500">
           {total} resultado{total !== 1 ? 's' : ''}
@@ -1154,7 +1242,7 @@ function MissingPersonsView({
                 </div>
               </div>
               <span
-                className={`rounded px-2 py-0.5 text-[10px] font-medium ${STATUS_COLORS[p.status] ?? 'bg-gray-100 text-gray-500'}`}
+                className={`rounded px-2 py-0.5 text-[10px] font-medium ${PERSON_STATUS_COLORS[p.status] ?? 'bg-gray-100 text-gray-500'}`}
               >
                 {p.status}
               </span>
@@ -1185,7 +1273,6 @@ function MissingPersonsView({
         )}
       </div>
 
-      {/* Ingesta */}
       <div className="flex items-center gap-3">
         <button
           onClick={handleIngest}

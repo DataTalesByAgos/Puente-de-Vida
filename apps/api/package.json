@@ -12,6 +12,7 @@
     "seed": "tsx src/seed.ts",
     "seed:demo": "tsx src/seed-demo.ts",
     "seed:orgs": "tsx src/seed-orgs.ts",
+    "seed:admin": "tsx src/seed-admin.ts",
     "sim": "tsx src/simulate.ts",
     "ingest": "tsx src/ingest.ts",
     "ingest:loop": "tsx src/ingest.ts --interval 30",

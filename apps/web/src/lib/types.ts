@@ -1,5 +1,65 @@
-// Tipos compartidos del frontend (espejo de la API).
+// Tipos del frontend — conviven el modelo legacy (reportes) y el nuevo (necesidades).
 
+// ── Import local + re-export desde @pdv/shared ──────────────────────────
+import type {
+  NeedCategory,
+  NeedStatus,
+  NeedScope,
+  Source,
+  NeedUpdateStatus,
+  CreatedByRole,
+  UserRole,
+  AvailabilityType,
+  GeoLocation,
+  Need,
+  NeedUpdate,
+  VolunteerProfile,
+  NeedDashboardStats,
+  PendingReview,
+} from '@pdv/shared';
+
+export type {
+  NeedCategory,
+  NeedStatus,
+  NeedScope,
+  Source,
+  NeedUpdateStatus,
+  CreatedByRole,
+  UserRole,
+  AvailabilityType,
+  GeoLocation,
+  Need,
+  NeedUpdate,
+  VolunteerProfile,
+  NeedDashboardStats,
+  PendingReview,
+} from '@pdv/shared';
+
+import { PRIORITIES, SOURCES } from '@pdv/shared';
+export type Priority = (typeof PRIORITIES)[number];
+export {
+  NEED_CATEGORIES,
+  NEED_SUBCATEGORIES,
+  NEED_STATUSES,
+  NEED_SCOPES,
+  PRIORITIES,
+  SOURCES,
+  CREATED_BY_ROLES,
+  USER_ROLES,
+  AVAILABILITY_TYPES,
+  CATEGORY_LABELS,
+  CATEGORY_ICONS,
+  SUBCATEGORY_LABELS,
+  NEED_STATUS_LABELS,
+  NEED_SCOPE_LABELS,
+  PRIORITY_LABELS,
+  PRIORITY_COLORS,
+  STATUS_COLORS,
+  SOURCE_LABELS,
+  UPDATE_STATUS_LABELS,
+} from '@pdv/shared';
+
+// ── Legacy: tipos del modelo de reportes (incidentes) ────────────────────
 export const INCIDENT_TYPES = [
   'medico',
   'desaparecido',
@@ -13,14 +73,13 @@ export const INCIDENT_TYPES = [
 ] as const;
 export type IncidentType = (typeof INCIDENT_TYPES)[number];
 
-export type Priority = 'critica' | 'alta' | 'media' | 'baja';
 export type Status = 'nuevo' | 'triage' | 'en_proceso' | 'resuelto';
-export type Source = 'whatsapp' | 'pwa' | 'telefono' | 'redes';
+export type LegacySource = 'whatsapp' | 'pwa' | 'telefono' | 'redes';
 
 export interface ServerReport {
   id: string;
   client_id: string | null;
-  source: Source;
+  source: LegacySource;
   raw_text: string;
   incident_type: IncidentType;
   priority: Priority;
@@ -44,12 +103,11 @@ export interface ServerReport {
   updated_at: string;
 }
 
-// Registro local en IndexedDB (offline-first).
 export interface LocalReport {
-  key: string; // clave primaria local (clientId o srv:<id>)
+  key: string;
   serverId: string | null;
   clientId: string | null;
-  source: Source;
+  source: LegacySource;
   rawText: string;
   incidentType: IncidentType;
   priority: Priority;
@@ -70,7 +128,7 @@ export interface LocalReport {
   groupScore: number | null;
   createdAt: string;
   updatedAt: string;
-  synced: 0 | 1; // 0 = pendiente de subir
+  synced: 0 | 1;
   assignedOrgId?: string | null;
   assignedOrgStatus?: string | null;
 }
@@ -99,13 +157,6 @@ export const TYPE_ICONS: Record<IncidentType, string> = {
   otro: '📌',
 };
 
-export const PRIORITY_LABELS: Record<Priority, string> = {
-  critica: 'Crítica',
-  alta: 'Alta',
-  media: 'Media',
-  baja: 'Baja',
-};
-
 export const STATUS_LABELS: Record<Status, string> = {
   nuevo: 'Nuevo',
   triage: 'Triage',
@@ -113,28 +164,13 @@ export const STATUS_LABELS: Record<Status, string> = {
   resuelto: 'Resuelto',
 };
 
-// Metadatos de cada canal de entrada (de dónde llega el reporte).
 export interface SourceMeta {
   label: string;
   icon: string;
-  // Clases de Tailwind para el "badge" del canal.
   chip: string;
 }
 
-export interface AuditEntry {
-  id?: number;
-  reportKey: string;
-  action: string;
-  fromStatus: Status | null;
-  toStatus: Status | null;
-  operator: string;
-  notes: string;
-  detail: Record<string, unknown>;
-  createdAt: string;
-  synced: 0 | 1;
-}
-
-export const SOURCE_META: Record<Source, SourceMeta> = {
+export const SOURCE_META: Record<LegacySource, SourceMeta> = {
   whatsapp: {
     label: 'WhatsApp',
     icon: '💬',
@@ -156,3 +192,91 @@ export const SOURCE_META: Record<Source, SourceMeta> = {
     chip: 'bg-coral/10 text-coralInk border border-coral/30',
   },
 };
+
+// ── Nuevo modelo: Necesidad local (offline-first en IndexedDB) ───────────
+export interface LocalNeed {
+  key: string;
+  serverId: string | null;
+  clientId: string | null;
+  title: string;
+  description: string;
+  category: NeedCategory;
+  subcategory: string | null;
+  priority: Priority;
+  status: NeedStatus;
+  scope: NeedScope;
+  parentId: string | null;
+  lat: number | null;
+  lng: number | null;
+  locationText: string | null;
+  organizationId: string | null;
+  orgName: string | null;
+  peopleRequired: number | null;
+  resourcesNeeded: string | null;
+  comments: string | null;
+  createdBy: string | null;
+  createdByRole: CreatedByRole | null;
+  assignedTo: string | null;
+  assignedBy: string | null;
+  assignedAt: string | null;
+  closedBy: string | null;
+  closedAt: string | null;
+  source: Source;
+  photoDataUrl: string | null;
+  age: number | null;
+  isMinor: boolean | null;
+  createdAt: string;
+  updatedAt: string;
+  synced: 0 | 1;
+}
+
+export interface AuditEntry {
+  id?: number;
+  reportKey: string;
+  action: string;
+  fromStatus: Status | null;
+  toStatus: Status | null;
+  operator: string;
+  notes: string;
+  detail: Record<string, unknown>;
+  createdAt: string;
+  synced: 0 | 1;
+}
+
+export function serverNeedToLocal(n: Need): LocalNeed {
+  return {
+    key: n.client_id ?? `srv:${n.id}`,
+    serverId: n.id,
+    clientId: n.client_id,
+    title: n.title,
+    description: n.description,
+    category: n.category,
+    subcategory: n.subcategory,
+    priority: n.priority,
+    status: n.status,
+    scope: n.scope,
+    parentId: n.parent_id,
+    lat: n.lat,
+    lng: n.lng,
+    locationText: n.location_text,
+    organizationId: n.organization_id,
+    orgName: n.org_name,
+    peopleRequired: n.people_required,
+    resourcesNeeded: n.resources_needed,
+    comments: n.comments,
+    createdBy: n.created_by,
+    createdByRole: n.created_by_role,
+    assignedTo: n.assigned_to,
+    assignedBy: n.assigned_by,
+    assignedAt: n.assigned_at,
+    closedBy: n.closed_by,
+    closedAt: n.closed_at,
+    source: n.source,
+    photoDataUrl: n.photo_url,
+    age: n.age,
+    isMinor: n.is_minor,
+    createdAt: n.created_at,
+    updatedAt: n.updated_at,
+    synced: 1,
+  };
+}

@@ -77,8 +77,8 @@ export default function WhatsappPage() {
             <div>
               <h1 className="font-display text-lg font-bold">Canales de entrada</h1>
               <p className="mt-0.5 max-w-2xl text-sm text-muted">
-                Mensajes de ciudadanos entrando por WhatsApp, SMS y llamadas. Los reportes se
-                procesan y clasifican automáticamente al llegar.
+                Mensajes de ciudadanos entrando por WhatsApp, SMS y llamadas. Las solicitudes se
+                procesan y convierten en necesidades al llegar.
               </p>
             </div>
           </div>
@@ -104,7 +104,6 @@ export default function WhatsappPage() {
         {/* Chat en vivo */}
         <section className="w-full shrink-0 lg:w-[420px]">
           <div className="overflow-hidden rounded-2xl border border-line bg-surface shadow-card">
-            {/* Header del chat */}
             <div className="flex items-center gap-3 bg-gradient-to-r from-coral/90 to-coral px-4 py-3 text-white">
               <span className="grid h-9 w-9 place-items-center rounded-full bg-white/20 text-lg">
                 🛟
@@ -118,7 +117,6 @@ export default function WhatsappPage() {
               </div>
             </div>
 
-            {/* Conversación */}
             <div
               ref={scrollRef}
               className="flex h-[480px] flex-col gap-2 overflow-y-auto bg-paper p-3"
@@ -132,7 +130,6 @@ export default function WhatsappPage() {
 
               {messages.map((r) => (
                 <div key={r.key} className="flex flex-col gap-1.5">
-                  {/* Mensaje del ciudadano */}
                   <div className="ml-auto max-w-[85%] rounded-2xl rounded-br-sm bg-wa/15 px-3 py-2 text-sm text-ink shadow-sm">
                     <p className="leading-snug">{r.rawText}</p>
                     <span className="mt-0.5 flex items-center justify-end gap-2 text-[0.6rem] text-muted">
@@ -142,7 +139,6 @@ export default function WhatsappPage() {
                     </span>
                   </div>
 
-                  {/* Respuesta del bot */}
                   <div className="mr-auto max-w-[88%] rounded-2xl rounded-bl-sm bg-surface px-3 py-2 text-sm text-ink shadow-sm">
                     {waText(buildCitizenReply(r))}
                     <span className="mt-1 block text-right text-[0.6rem] text-muted">
@@ -153,7 +149,6 @@ export default function WhatsappPage() {
               ))}
             </div>
 
-            {/* Footer del chat - solo informativo */}
             <div className="border-t border-line bg-paper px-4 py-2.5 text-center text-[0.6rem] text-muted">
               Conversación simulada con datos reales · los mensajes se sincronizan automáticamente
             </div>
@@ -167,7 +162,7 @@ export default function WhatsappPage() {
               <span className="text-lg">📋</span>
               <div>
                 <h2 className="font-display text-sm font-bold">Bandeja de coordinación</h2>
-                <p className="text-xs text-muted">Reportes clasificados entrando en vivo.</p>
+                <p className="text-xs text-muted">Necesidades clasificadas entrando en vivo.</p>
               </div>
             </div>
           </div>
@@ -175,7 +170,7 @@ export default function WhatsappPage() {
           {messages.length === 0 ? (
             <div className="card flex flex-col items-center gap-2 py-10 text-center">
               <span className="text-3xl">📭</span>
-              <p className="text-sm font-medium text-ink">Esperando reportes…</p>
+              <p className="text-sm font-medium text-ink">Esperando mensajes…</p>
               <p className="max-w-md text-xs text-muted">
                 Los mensajes de ciudadanos aparecen acá clasificados automáticamente.
               </p>
@@ -193,7 +188,7 @@ export default function WhatsappPage() {
             <Link to="/" className="text-coralInk underline">
               Panel del coordinador
             </Link>{' '}
-            los reportes se ordenan por urgencia (críticos primero).
+            las necesidades se ordenan por urgencia (críticas primero).
           </p>
         </section>
       </div>
